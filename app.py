@@ -216,8 +216,10 @@ st.markdown("""
 def load_data():
 
     return pd.read_excel(
-        "DOT 대시보드.xlsx",
-        sheet_name="ASP"
+        "DOT 대시보드.xlsb",
+        sheet_name="ASP",
+        engine="pyxlsb"
+
     )
 
 
