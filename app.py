@@ -1848,9 +1848,11 @@ elif st.session_state.menu == "ASP 활동":
 
             automargin=True,
 
-            showline=True,
-            linewidth=1,
-            linecolor="#9ca3af",
+            showline=False,
+            
+            zeroline=True,
+            zerolinewidth=1.5,
+            zerolinecolor="#9ca3af",
 
             showgrid=False
         ),
@@ -1880,105 +1882,148 @@ elif st.session_state.menu == "ASP 활동":
         config={"displayModeBar": False},
         key="asp_category_graph"
     )
+    # =========================
+    # 제한항생제 승인 현황
+    # =========================
+
+    st.markdown("""
+    <div class="section-title-box">
+        <div class="section-title-text">
+            제한항생제 승인 현황
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # =========================
-    # 도넛 그래프 데이터
+    # 월별 데이터 정리
     # =========================
 
-    pie_df = category_df.copy()
+    approval_df = df_inter_data.copy()
 
-    # 전체 합계
-    total_value = pie_df["건수"].sum()
-
-    # 비율 계산
-    pie_df["비율"] = (
-        pie_df["건수"]
-        / total_value
-        * 100
+    # 승인률 %
+    approval_df["승인률(%)"] = (
+        approval_df["승인률"] * 100
     )
 
     # =========================
-    # 색상 매핑
+    # 콤보 그래프 생성
     # =========================
 
-    color_map = {
-
-        "1.항생제 병합(중복) 처방 중재": "#A7C7FF",
-        "2.항생제 장기투여 중재": "#B8E6C1",
-        "3.주사 항생제의 경구 전환": "#FFD6A5",
-        "4.항생제 하강 치료": "#FFB4B4",
-        "5.미생물 검사 기반의 항생제 처방 중재": "#D5C6FF",
-        "6.가이드라인에 맞는 항생제 처방": "#AEE9F5",
-        "7.특정 항생제에 대한 치료 약물 모니터링": "#F7C6E0"
-    }
-
-    # =========================
-    # 도넛 그래프
-    # =========================
-
+    from plotly.subplots import make_subplots
     import plotly.graph_objects as go
-    import math
 
-    fig_pie = go.Figure()
+    fig_approval = make_subplots(
+        specs=[[{"secondary_y": True}]]
+    )
 
-    fig_pie.add_trace(
+    # =========================
+    # 승인 건수 막대
+    # =========================
 
-        go.Pie(
+    fig_approval.add_trace(
 
-            labels=pie_df["항목"],
+        go.Bar(
 
-            values=pie_df["건수"],
+            x=approval_df["월"],
 
-            hole=0.48,
+            y=approval_df["승인 건수"],
 
-            sort=False,
+            name="승인 건수",
 
-            direction="clockwise",
+            marker_color="#A7C7FF",
 
-            # 5% 이상만 내부 표시
-            text=[
-                f"{p:.1f}%"
-                if p >= 5
-                else ""
-                for p in pie_df["비율"]
-            ],
+            text=approval_df["승인 건수"],
 
-            textinfo="text",
+            textposition="outside",
 
-            textposition="inside",
+            textfont=dict(
+                size=13,
+                color="#111827"
+            )
+        ),
 
-            # 글자 방향 수평
-            insidetextorientation="horizontal",
+        secondary_y=False
+    )
 
-            insidetextfont=dict(
-                size=18,
-                color="white"
+    # =========================
+    # 미승인 건수 막대
+    # =========================
+
+    fig_approval.add_trace(
+
+        go.Bar(
+
+            x=approval_df["월"],
+
+            y=approval_df["미승인 건수"],
+
+            name="미승인 건수",
+
+            marker_color="#FFB4B4",
+
+            text=approval_df["미승인 건수"],
+
+            textposition="outside",
+
+            textfont=dict(
+                size=13,
+                color="#111827"
+            )
+        ),
+
+        secondary_y=False
+    )
+
+    # =========================
+    # 승인률 선 그래프
+    # =========================
+
+    fig_approval.add_trace(
+
+        go.Scatter(
+
+            x=approval_df["월"],
+
+            y=approval_df["승인률(%)"],
+
+            name="승인률",
+
+            mode="lines+markers+text",
+
+            line=dict(
+                color="#2563eb",
+                width=3
             ),
 
             marker=dict(
+                size=9
+            ),
 
-                colors=[
-                    "#A7C7FF",
-                    "#B8E6C1",
-                    "#FFD6A5",
-                    "#FFB4B4",
-                    "#D5C6FF",
-                    "#AEE9F5",
-                    "#F7C6E0"
-                ],
+            text=[
+                f"{v:.1f}%"
+                for v in approval_df["승인률(%)"]
+            ],
 
-                line=dict(
-                    color="white",
-                    width=3
-                )
+            textposition="top center",
+
+            textfont=dict(
+                size=13,
+                color="#1e3a8a"
             )
-        )
+        ),
+
+        secondary_y=True
     )
-    fig_pie.update_layout(
 
-        height=650,
+    # =========================
+    # 레이아웃
+    # =========================
 
-        showlegend=True,
+    fig_approval.update_layout(
+
+        height=520,
+
+        barmode="group",
 
         paper_bgcolor='rgba(255,255,255,0)',
         plot_bgcolor='rgba(255,255,255,0)',
@@ -1992,29 +2037,61 @@ elif st.session_state.menu == "ASP 활동":
 
         legend=dict(
 
-            orientation="v",
+            orientation="h",
 
-            yanchor="middle",
-            y=0.5,
+            yanchor="bottom",
+            y=1.02,
 
-            xanchor="left",
-            x=1.02,
+            xanchor="right",
+            x=1
+        ),
 
-            font=dict(
-                size=13
-            )
+        xaxis=dict(
+
+            showline=False,
+
+            showgrid=False
+        ),
+        yaxis=dict(
+
+            title="건수",
+
+            range=[0, 1000],
+
+            showline=False,
+
+            showgrid=True,
+            gridcolor="#e5e7eb",
+
+            dtick=100
+        ),
+
+        font=dict(
+            color="#111827"
         )
     )
 
+    # =========================
+    # 우측 Y축
+    # =========================
+
+    fig_approval.update_yaxes(
+
+        title_text="승인률 (%)",
+
+        range=[0, 100],
+
+        secondary_y=True
+    )
 
     # =========================
-    # 제목
+    # 그래프 제목
     # =========================
 
     st.markdown("""
     <div class="chart-title-box">
         <div class="chart-title">
-            🎯 중재활동 항목 별 수행 비율
+            📋 월별 제한항생제 승인 현황
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -2024,8 +2101,8 @@ elif st.session_state.menu == "ASP 활동":
     # =========================
 
     st.plotly_chart(
-        fig_pie,
+        fig_approval,
         use_container_width=True,
         config={"displayModeBar": False},
-        key="asp_pie_chart"
+        key="approval_graph"
     )
