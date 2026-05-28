@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import streamlit.components.v1 as components
+import plotly.graph_objects as go
 
 # 페이지 설정
 st.set_page_config(
@@ -20,8 +21,13 @@ html, body, [class*="css"]  {
 
 div[data-testid="stPlotlyChart"] {
     background: white;
-    border-radius: 28px;
-    padding: 6px;
+
+    border-radius: 10px;
+
+    padding: 0px;
+
+    overflow: hidden;
+
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
 
@@ -520,9 +526,7 @@ if st.session_state.menu == "항생제 사용량":
             "DOT 대시보드.xlsb",
             sheet_name="ASP",
             engine="pyxlsb"
-
         )
-
 
     # 로딩 화면
     # 로딩 placeholder
@@ -1296,5 +1300,732 @@ if st.session_state.menu == "항생제 사용량":
             st.toast("데이터를 최신화했습니다.")
 
 elif st.session_state.menu == "ASP 활동":
+    
+    @st.cache_data(ttl=86400)
+    def load_inter_data():
 
-    st.write("ASP 활동 화면")       
+        return pd.read_excel(
+            "DOT 대시보드.xlsb",
+            sheet_name="중재",
+            engine="pyxlsb"
+        )  
+
+    with st.spinner("⏳데이터를 조회하고 있습니다..."):
+
+        df_inter_data = load_inter_data()
+
+    st.markdown("""
+    <div class="section-title-box">
+        <div class="section-title-text">
+            ASP 중재 활동
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # -------------------------
+    # 최근 월 / 직전 월
+    # -------------------------
+
+    month_order = sorted(
+        df_inter_data["월"].dropna().unique()
+    )
+
+    latest_month = month_order[-1]
+    prev_month = month_order[-2]
+
+    # -------------------------
+    # 중재 건수
+    # -------------------------
+
+    latest_intervention = (
+        df_inter_data[
+            df_inter_data["월"] == latest_month
+        ]["중재건수"].iloc[0]
+    )
+
+    prev_intervention = (
+        df_inter_data[
+            df_inter_data["월"] == prev_month
+        ]["중재건수"].iloc[0]
+    )
+
+    intervention_change = (
+        (latest_intervention - prev_intervention)
+        / prev_intervention
+    ) * 100
+
+    # 상승 / 하락 표시
+    if intervention_change >= 0:
+
+        intervention_arrow = "▲"
+        intervention_color = "#ef4444"
+
+    else:
+
+        intervention_arrow = "▼"
+        intervention_color = "#3b82f6"
+
+    # -------------------------
+    # 수용률
+    # -------------------------
+
+    latest_accept = (
+        df_inter_data[
+            df_inter_data["월"] == latest_month
+        ]["수용률"].iloc[0]
+    ) * 100
+
+    prev_accept = (
+        df_inter_data[
+            df_inter_data["월"] == prev_month
+        ]["수용률"].iloc[0]
+    ) * 100
+
+    accept_change = (
+        (latest_accept - prev_accept)
+        / prev_accept
+    ) * 100
+
+    # 상승 / 하락 표시
+    if accept_change >= 0:
+
+        accept_arrow = "▲"
+        accept_color = "#ef4444"
+
+    else:
+
+        accept_arrow = "▼"
+        accept_color = "#3b82f6"
+
+    # =========================
+    # KPI 카드
+    # =========================
+
+    col1, col2 = st.columns(2)
+
+    # -------------------------
+    # 좌측 KPI
+    # -------------------------
+
+    with col1:
+
+        st.markdown(f"""
+        <div style="
+            background:white;
+            border-radius:28px;
+            padding:28px 36px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom:20px;
+        ">
+
+        <!-- 타이틀 -->
+        <div style="
+            font-size:20px;
+            font-weight:800;
+            color:#102a43;
+            margin-bottom:22px;
+        ">
+            이달의 ASP 중재건수
+        </div>
+
+        <!-- 본문 -->
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        ">
+
+        <!-- 왼쪽 숫자 -->
+        <div style="
+            font-size:58px;
+            font-weight:800;
+            color:#111827;
+        ">
+            {latest_intervention:,}
+        </div>
+
+        <!-- 오른쪽 변화율 -->
+        <div style="
+            text-align:center;
+            padding-left:30px;
+            border-left:1px solid #d1d5db;
+        ">
+
+        <div style="
+            font-size:18px;
+            font-weight:700;
+            color:#374151;
+            margin-bottom:8px;
+        ">
+            전월 대비
+        </div>
+
+        <div style="
+            font-size:42px;
+            font-weight:800;
+            color:{intervention_color};
+        ">
+            {intervention_arrow} {abs(intervention_change):.1f}%
+        </div>
+
+        </div>
+
+        </div>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+    # -------------------------
+    # 우측 KPI
+    # -------------------------
+
+    with col2:
+
+        st.markdown(f"""
+        <div style="
+            background:white;
+            border-radius:28px;
+            padding:28px 36px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom:20px;
+        ">
+
+        <!-- 타이틀 -->
+        <div style="
+            font-size:20px;
+            font-weight:800;
+            color:#102a43;
+            margin-bottom:22px;
+        ">
+            이달의 수용률
+        </div>
+
+        <!-- 본문 -->
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        ">
+
+        <!-- 왼쪽 숫자 -->
+        <div style="
+            font-size:58px;
+            font-weight:800;
+            color:#111827;
+        ">
+            {latest_accept:.1f}%
+        </div>
+
+        <!-- 오른쪽 변화율 -->
+        <div style="
+            text-align:center;
+            padding-left:30px;
+            border-left:1px solid #d1d5db;
+        ">
+
+        <div style="
+            font-size:18px;
+            font-weight:700;
+            color:#374151;
+            margin-bottom:8px;
+        ">
+            전월 대비
+        </div>
+
+        <div style="
+            font-size:42px;
+            font-weight:800;
+            color:{accept_color};
+        ">
+            {accept_arrow} {abs(accept_change):.1f}%
+        </div>
+
+        </div>
+
+        </div>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+    # =========================
+    # 월별 ASP 중재 건수
+    # =========================
+
+    graph_df = df_inter_data.copy()
+
+    # 수용률 % 변환
+    graph_df["수용률_percent"] = (
+        graph_df["수용률"] * 100
+    )
+
+    # 콤보 그래프
+    fig_intervention = px.bar(
+        graph_df,
+        x="월",
+        y="중재건수",
+        text="중재건수",
+    )
+
+    # 막대 스타일
+    fig_intervention.update_traces(
+
+        marker_color="#5a9cf5",
+
+        texttemplate='%{text:,.0f}',
+
+        textposition='inside',
+
+        insidetextanchor='end',
+
+        name="중재건수"
+    )
+
+    # 수용률 선 추가
+    fig_intervention.add_scatter(
+
+        x=graph_df["월"],
+
+        y=graph_df["수용률_percent"],
+
+        mode="lines+markers+text",
+
+        name="수용률",
+
+        yaxis="y2",
+
+        text=[
+            f"{v:.1f}%"
+            for v in graph_df["수용률_percent"]
+        ],
+
+        textposition="bottom center",
+
+        line=dict(
+            color="#ef4444",
+            width=3
+        ),
+
+        marker=dict(
+            size=9,
+            color="#ef4444"
+        )
+    )
+
+    # 레이아웃
+    fig_intervention.update_layout(
+
+        height=480,
+
+        xaxis_title=None,
+
+        # 좌측 Y축
+        yaxis=dict(
+
+            title="중재건수",
+
+            showgrid=False
+        ),
+
+        # 우측 Y축
+        yaxis2=dict(
+
+            title="수용률 (%)",
+
+            overlaying="y",
+
+            side="right",
+
+            range=[90, 100],
+
+            tickformat=".0f"
+        ),
+
+        paper_bgcolor='rgba(255,255,255,0)',
+        plot_bgcolor='rgba(255,255,255,0)',
+
+        margin=dict(
+            l=20,
+            r=20,
+            t=40,
+            b=20
+        ),
+
+        legend=dict(
+
+            orientation="h",
+
+            yanchor="bottom",
+            y=1.02,
+
+            xanchor="right",
+            x=1
+        ),
+
+        legend_title_text=""
+    )
+
+    # 제목 박스
+    st.markdown("""
+    <div class="chart-title-box">
+        <div class="chart-title">
+            📈 월별 ASP 중재 건수
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 그래프 출력
+    st.plotly_chart(
+        fig_intervention,
+        use_container_width=True,
+        config={"displayModeBar": False},
+        key="asp_intervention_graph"
+    )
+
+    # =========================
+    # 월 선택 슬라이서
+    # =========================
+
+    # 월 변환 함수
+    def convert_month_label(month_text):
+
+        year = "20" + month_text[:2]
+
+        month = month_text[-2:]
+
+        return f"{year}년 {int(month)}월"
+
+    # 월 리스트
+    month_list = (
+        df_inter_data["월"]
+        .dropna()
+        .unique()
+        .tolist()
+    )
+
+    # 최신순 정렬
+    month_list = sorted(
+        month_list,
+        reverse=True
+    )
+
+    # 표시용 dictionary
+    month_display_map = {
+        m: convert_month_label(m)
+        for m in month_list
+    }
+
+    # 선택창
+    selected_month = st.selectbox(
+
+        "월 선택",
+
+        month_list,
+
+        index=0,    
+
+        format_func=lambda x:
+            month_display_map[x]
+    )
+    st.markdown("""
+    <div class="chart-title-box">
+    <div class="chart-title">
+        📊 중재활동 항목 별 중재 현황
+    </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # =========================
+    # 선택 월 데이터
+    # =========================
+
+    selected_row = df_inter_data[
+        df_inter_data["월"] == selected_month
+    ].iloc[0]
+
+    # 그래프 데이터
+    category_df = pd.DataFrame({
+
+        "항목": [
+            "1.항생제 병합(중복) 처방 중재",
+            "2.항생제 장기투여 중재",
+            "3.주사 항생제의 경구 전환",
+            "4.항생제 하강 치료",
+            "5.미생물 검사 기반의 항생제 처방 중재",
+            "6.가이드라인에 맞는 항생제 처방",
+            "7.특정 항생제에 대한 치료 약물 모니터링"
+        ],
+
+        "건수": [
+
+            selected_row["중복"],
+            selected_row["장기"],
+            selected_row["경구"],
+            selected_row["하강"],
+            selected_row["미생물"],
+            selected_row["지침"],
+            selected_row["농도"]
+        ]
+    })
+
+    # =========================
+    # 가로 막대 그래프
+    # =========================
+
+    fig_category = px.bar(
+
+        category_df,
+
+        x="건수",
+
+        y="항목",
+
+        orientation="h",
+
+        text="건수",
+
+        color="항목",
+
+        color_discrete_sequence=[
+            "#A7C7FF",  # pastel blue
+            "#B8E6C1",  # pastel green
+            "#FFD6A5",  # pastel orange
+            "#FFB4B4",  # pastel red
+            "#D5C6FF",  # pastel purple
+            "#AEE9F5",  # pastel cyan
+            "#F7C6E0"   # pastel pink
+        ],
+
+        category_orders={
+            "항목": [
+                "1.항생제 병합(중복) 처방 중재",
+                "2.항생제 장기투여 중재",
+                "3.주사 항생제의 경구 전환",
+                "4.항생제 하강 치료",
+                "5.미생물 검사 기반의 항생제 처방 중재",
+                "6.가이드라인에 맞는 항생제 처방",
+                "7.특정 항생제에 대한 치료 약물 모니터링"
+            ]
+        }
+    )
+
+
+    # 스타일
+    fig_category.update_traces(
+        width=0.32,
+
+        texttemplate='%{text:,.0f}',
+
+        textposition='outside',
+
+        marker_line_color='rgba(0,0,0,0.18)',
+
+        marker_line_width=1.5,
+
+        opacity=0.95
+    )
+
+    # 레이아웃
+    fig_category.update_layout(
+
+        height=500,
+
+        xaxis_title="중재 건수",
+
+        xaxis=dict(
+
+            range=[0, category_df["건수"].max() * 1.15],
+
+            showline=True,
+            linewidth=1,
+            linecolor="#9ca3af",
+
+            showgrid=True,
+            gridcolor="#e5e7eb",
+            gridwidth=1
+        ),
+
+        yaxis=dict(
+
+            automargin=True,
+
+            showline=True,
+            linewidth=1,
+            linecolor="#9ca3af",
+
+            showgrid=False
+        ),
+        yaxis_title=None,
+
+        paper_bgcolor='rgba(255,255,255,0)',
+        plot_bgcolor='rgba(255,255,255,0)',
+
+        margin=dict(
+            l=0,
+            r=40,
+            t=20,
+            b=20
+        ),
+
+        bargap=0.45,
+
+        legend_title_text="",
+
+        showlegend=False
+    )
+
+    # 출력
+    st.plotly_chart(
+        fig_category,
+        use_container_width=True,
+        config={"displayModeBar": False},
+        key="asp_category_graph"
+    )
+
+    # =========================
+    # 도넛 그래프 데이터
+    # =========================
+
+    pie_df = category_df.copy()
+
+    # 전체 합계
+    total_value = pie_df["건수"].sum()
+
+    # 비율 계산
+    pie_df["비율"] = (
+        pie_df["건수"]
+        / total_value
+        * 100
+    )
+
+    # =========================
+    # 색상 매핑
+    # =========================
+
+    color_map = {
+
+        "1.항생제 병합(중복) 처방 중재": "#A7C7FF",
+        "2.항생제 장기투여 중재": "#B8E6C1",
+        "3.주사 항생제의 경구 전환": "#FFD6A5",
+        "4.항생제 하강 치료": "#FFB4B4",
+        "5.미생물 검사 기반의 항생제 처방 중재": "#D5C6FF",
+        "6.가이드라인에 맞는 항생제 처방": "#AEE9F5",
+        "7.특정 항생제에 대한 치료 약물 모니터링": "#F7C6E0"
+    }
+
+    # =========================
+    # 도넛 그래프
+    # =========================
+
+    import plotly.graph_objects as go
+    import math
+
+    fig_pie = go.Figure()
+
+    fig_pie.add_trace(
+
+        go.Pie(
+
+            labels=pie_df["항목"],
+
+            values=pie_df["건수"],
+
+            hole=0.48,
+
+            sort=False,
+
+            direction="clockwise",
+
+            # 5% 이상만 내부 표시
+            text=[
+                f"{p:.1f}%"
+                if p >= 5
+                else ""
+                for p in pie_df["비율"]
+            ],
+
+            textinfo="text",
+
+            textposition="inside",
+
+            # 글자 방향 수평
+            insidetextorientation="horizontal",
+
+            insidetextfont=dict(
+                size=18,
+                color="white"
+            ),
+
+            marker=dict(
+
+                colors=[
+                    "#A7C7FF",
+                    "#B8E6C1",
+                    "#FFD6A5",
+                    "#FFB4B4",
+                    "#D5C6FF",
+                    "#AEE9F5",
+                    "#F7C6E0"
+                ],
+
+                line=dict(
+                    color="white",
+                    width=3
+                )
+            )
+        )
+    )
+    fig_pie.update_layout(
+
+        height=650,
+
+        showlegend=True,
+
+        paper_bgcolor='rgba(255,255,255,0)',
+        plot_bgcolor='rgba(255,255,255,0)',
+
+        margin=dict(
+            l=20,
+            r=20,
+            t=20,
+            b=20
+        ),
+
+        legend=dict(
+
+            orientation="v",
+
+            yanchor="middle",
+            y=0.5,
+
+            xanchor="left",
+            x=1.02,
+
+            font=dict(
+                size=13
+            )
+        )
+    )
+
+
+    # =========================
+    # 제목
+    # =========================
+
+    st.markdown("""
+    <div class="chart-title-box">
+        <div class="chart-title">
+            🎯 중재활동 항목 별 수행 비율
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # =========================
+    # 출력
+    # =========================
+
+    st.plotly_chart(
+        fig_pie,
+        use_container_width=True,
+        config={"displayModeBar": False},
+        key="asp_pie_chart"
+    )
