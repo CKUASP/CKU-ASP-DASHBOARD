@@ -304,11 +304,7 @@ div[data-baseweb="select"] input:focus {
 /* 하단 섹션 제목 박스 */
 .section-title-box {
 
-    background: linear-gradient(
-        135deg,
-        #dbeafe,
-        #c7dcf7
-    );
+    background-color: #17406d;
 
     border-radius: 22px;
 
@@ -328,7 +324,7 @@ div[data-baseweb="select"] input:focus {
 /* 하단 섹션 제목 글씨 */
 .section-title-text {
 
-    color: #102a43;
+    color: white;
 
     font-size: 28px;
 
