@@ -35,15 +35,15 @@ div[data-testid="stPlotlyChart"] {
 /* 전체 배경 */
 .stApp {
     background-color: #f3f4f6;
-    font-family: 'Nanum Gothic', sans-serif;
+    font-family: 'Nanum Gothic';
 }
 
 /* 메인 제목 박스 */
 .title-box {
-    background: #102a43;
-    padding: 26px 40px;
+    background: #214d99;
+    padding: 14px 20px;
     border-radius: 28px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 
     /* 그림자 */
     box-shadow: 0 4px 14px rgba(0,0,0,0.14);
@@ -57,29 +57,12 @@ div[data-testid="stPlotlyChart"] {
     gap: 34px;
 }
 
-/* 로고 */
-.title-logo {
-
-    height: 100px;
-
-    width: auto;
-
-    padding: 10px;
-
-    background: white;
-
-    border-radius: 18px;
-
-    backdrop-filter: blur(4px);
-
-    filter: brightness(1.15);
-}
 
 /* 메인 제목 글씨 */
 .title-text {
     color: white;
-    font-size: 32px;
-    font-weight: 900;
+    font-size: 36px;
+    font-weight: 600;
     margin: 0;
 }
 
@@ -481,17 +464,28 @@ div[data-testid="stSpinner"] p {
 
 import base64
 
-# 로고 읽기
-with open("CKU.png", "rb") as image_file:
-    logo_base64 = base64.b64encode(
+with open("logo1.png", "rb") as image_file:
+    logo1_base64 = base64.b64encode(
         image_file.read()
     ).decode()
 
 title_html = f"""
 <div class="title-box">
 
-<img src="data:image/png;base64,{logo_base64}" class="title-logo">
+<!-- 로고 영역 -->
+<div style="
+    display:flex;
+    align-items:center;
+    gap:5px;
+">
 
+<img src="data:image/png;base64,{logo1_base64}" style="
+    height:110px;
+    width:auto;
+">
+</div>
+
+<!-- 제목 -->
 <div class="title-text">
     가톨릭관동대학교 국제성모병원<br>
     ASP DASHBOARD
@@ -534,7 +528,7 @@ with center:
     </style>
     """, unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     # 왼쪽 버튼
     with col1:
@@ -566,6 +560,23 @@ with center:
             ),
             on_click=lambda: st.session_state.update(
                 menu="ASP 활동"
+            )
+        )
+
+    # 오른쪽 버튼
+    with col3:
+
+        st.button(
+            "👨‍⚕️ ASP 전담팀",
+            use_container_width=True,
+            key="menu3",
+            type=(
+                "secondary"
+                if st.session_state.menu == "ASP 전담팀"
+                else "primary"
+            ),
+            on_click=lambda: st.session_state.update(
+                menu="ASP 전담팀"
             )
         )
 
@@ -2825,3 +2836,194 @@ elif st.session_state.menu == "ASP 활동":
 
     </div>
     """, unsafe_allow_html=True)
+
+elif st.session_state.menu == "ASP 전담팀":
+
+    st.markdown("""
+    <div class="section-title-box">
+        <div class="section-title-text">
+            ASP 전담팀 구성
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    with open("team.png", "rb") as image_file:
+        team_base64 = base64.b64encode(
+            image_file.read()
+        ).decode()
+
+    # =========================
+    # 좌우 컬럼
+    # =========================
+
+    left_col, right_col = st.columns([1.05, 1])
+
+    # =========================
+    # 왼쪽 컬럼 (사진)
+    # =========================
+
+    with left_col:
+
+        st.markdown(f"""
+        <div style="
+            background:white;
+            border-radius:28px;
+            padding:28px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom:24px;
+            height:100%;
+        ">
+
+        <div style="
+            display:flex;
+            justify-content:center;
+            align-items:center;
+        ">
+            <img src="data:image/png;base64,{team_base64}" style="
+                width:100%;
+                border-radius:20px;
+            ">
+        </div>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+    # =========================
+    # 오른쪽 컬럼
+    # =========================
+
+    with right_col:
+
+        st.markdown("""
+        <div style="
+            background:white;
+            border-radius:28px;
+            padding:28px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom:24px;
+        ">
+
+        <div style="
+            display:flex;
+            gap:24px;
+            align-items:flex-start;
+        ">
+
+        <!-- ===================== -->
+        <!-- 왼쪽 표 -->
+        <!-- ===================== -->
+
+        <div style="
+            flex:1;
+        ">
+
+        <div style="
+            display:flex;
+            justify-content:center;
+            margin-bottom:18px;
+        ">
+
+        <div style="
+            background:#dbeafe;
+            color:#17406D;
+            padding:10px 26px;
+            border-radius:18px;
+            font-size:18px;
+            font-weight:800;
+            box-shadow:0 2px 6px rgba(0,0,0,0.06);
+            border:1px solid #cfe0f5;
+        ">
+            의사 / 약사 현황
+        </div>
+
+        </div>
+
+        <table style="
+            width:100%;
+            border-collapse:collapse;
+            text-align:center;
+            overflow:hidden;
+            border-radius:10px;
+        ">
+
+        <tr style="
+            background:#214d99;
+            color:white;
+        ">
+            <th style="padding:12px;">소속</th>
+            <th style="padding:12px;">성명</th>
+        </tr>
+
+        <tr><td style="padding:10px;">감염내과</td><td>신소연</td></tr>
+        <tr><td style="padding:10px;">감염내과</td><td>김준형</td></tr>
+        <tr><td style="padding:10px;">알레르기면역내과</td><td>이용원</td></tr>
+        <tr><td style="padding:10px;">신장내과</td><td>김찬호</td></tr>
+        <tr><td style="padding:10px;">심장내과</td><td>박형복</td></tr>
+        <tr><td style="padding:10px;">중환자내과</td><td>조은섭</td></tr>
+        <tr><td style="padding:10px;">약제팀</td><td>양준원</td></tr>
+        <tr><td style="padding:10px;">약제팀</td><td>최경진</td></tr>
+
+        </table>
+
+        </div>
+
+        <!-- ===================== -->
+        <!-- 오른쪽 표 -->
+        <!-- ===================== -->
+
+        <div style="
+            flex:1;
+        ">
+
+        <div style="
+            display:flex;
+            justify-content:center;
+            margin-bottom:18px;
+        ">
+
+        <div style="
+            background:#dbeafe;
+            color:#17406D;
+            padding:10px 26px;
+            border-radius:18px;
+            font-size:18px;
+            font-weight:800;
+            box-shadow:0 2px 6px rgba(0,0,0,0.06);
+            border:1px solid #cfe0f5;
+        ">
+            다학제 인력 현황
+        </div>
+
+        </div>
+
+        <table style="
+            width:100%;
+            border-collapse:collapse;
+            text-align:center;
+            overflow:hidden;
+            border-radius:10px;
+        ">
+
+        <tr style="
+            background:#214d99;
+            color:white;
+        ">
+            <th style="padding:12px;">소속</th>
+            <th style="padding:12px;">성명</th>
+        </tr>
+
+        <tr><td style="padding:10px;">간호부</td><td>이태경</td></tr>
+        <tr><td style="padding:10px;">간호부</td><td>이고은</td></tr>
+        <tr><td style="padding:10px;">전산정보팀</td><td>정의철</td></tr>
+        <tr><td style="padding:10px;">전산정보팀</td><td>홍성규</td></tr>
+        <tr><td style="padding:10px;">감염관리실</td><td>박세정</td></tr>
+        <tr><td style="padding:10px;">기획팀</td><td>김지영</td></tr>
+
+        </table>
+
+        </div>
+
+        </div>
+
+        </div>
+        """, unsafe_allow_html=True)
