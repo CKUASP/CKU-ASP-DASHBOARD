@@ -3,10 +3,11 @@ import pandas as pd
 import plotly.express as px
 import streamlit.components.v1 as components
 import plotly.graph_objects as go
+import base64
 
 # 페이지 설정
 st.set_page_config(
-    page_title="국제성모병원 ASP DASHBOARD",
+    page_title="가톨릭관동대학교 국제성모병원 ASP DASHBOARD",
     layout="wide"
 )
 
@@ -39,23 +40,46 @@ div[data-testid="stPlotlyChart"] {
 
 /* 메인 제목 박스 */
 .title-box {
-    background-color: #102a43;
-    padding: 22px 30px;
-    border-radius: 24px;
-    margin-bottom: 35px;
+    background: #102a43;
+    padding: 26px 40px;
+    border-radius: 28px;
+    margin-bottom: 12px;
 
     /* 그림자 */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.14);
 
-    /* 가운데 정렬 */
-    text-align: center;
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 34px;
+}
+
+/* 로고 */
+.title-logo {
+
+    height: 100px;
+
+    width: auto;
+
+    padding: 10px;
+
+    background: white;
+
+    border-radius: 18px;
+
+    backdrop-filter: blur(4px);
+
+    filter: brightness(1.15);
 }
 
 /* 메인 제목 글씨 */
 .title-text {
     color: white;
-    font-size: 42px;
-    font-weight: 800;
+    font-size: 32px;
+    font-weight: 900;
     margin: 0;
 }
 
@@ -455,14 +479,28 @@ div[data-testid="stSpinner"] p {
 </style>
 """, unsafe_allow_html=True)
 
-# 제목
-st.markdown("""
+import base64
+
+# 로고 읽기
+with open("CKU.png", "rb") as image_file:
+    logo_base64 = base64.b64encode(
+        image_file.read()
+    ).decode()
+
+title_html = f"""
 <div class="title-box">
-    <div class="title-text">
-        국제성모병원 ASP DASHBOARD
-    </div>
+
+<img src="data:image/png;base64,{logo_base64}" class="title-logo">
+
+<div class="title-text">
+    가톨릭관동대학교 국제성모병원<br>
+    ASP DASHBOARD
 </div>
-""", unsafe_allow_html=True)
+
+</div>
+"""
+
+st.markdown(title_html, unsafe_allow_html=True)
 
 # 기본 메뉴
 if "menu" not in st.session_state:
@@ -478,6 +516,21 @@ with center:
         display:flex;
         gap:16px;
     }
+    /* 버튼 전체 */
+    div.stButton > button {
+        font-size:24px !important;
+        font-weight:700 !important;
+        height:70px !important;
+        border-radius:16px !important;
+    }
+
+    /* 버튼 hover */
+    div.stButton > button:hover {
+        transform:translateY(-1px);
+        transition:0.2s;
+    }
+
+
     </style>
     """, unsafe_allow_html=True)
 
@@ -579,7 +632,6 @@ if st.session_state.menu == "항생제 사용량":
     # 분기 컬럼 생성
     df["분기"] = df["처방 월"].apply(convert_quarter)
 
-
     # =========================
     # KPI 카드용 데이터 계산
     # =========================
@@ -641,7 +693,7 @@ if st.session_state.menu == "항생제 사용량":
         total_color = "#ef4444"
     else:
         total_arrow = "▼"
-        total_color = "#3b82f6"
+        total_color = "#10B981"
 
     # 제한항생제 상승/하락 표시
     if restricted_change >= 0:
@@ -649,7 +701,7 @@ if st.session_state.menu == "항생제 사용량":
         restricted_color = "#ef4444"
     else:
         restricted_arrow = "▼"
-        restricted_color = "#3b82f6"
+        restricted_color = "#10B981"
 
     total_change_text = f"{total_arrow} {abs(total_change):.1f}%"
 
@@ -673,7 +725,7 @@ if st.session_state.menu == "항생제 사용량":
             color:#102a43;
             margin-bottom:22px;
         ">
-            이달의 총 항생제 사용량 (DOT/1,000 patients-day)
+            이달의 총 항생제 사용량
         </div>
 
         <!-- 본문 -->
@@ -683,13 +735,27 @@ if st.session_state.menu == "항생제 사용량":
             align-items:center;
         ">
 
-        <!-- 왼쪽 숫자 -->
+        <!-- 왼쪽 숫자 + 단위 -->
+        <div>
+
         <div style="
             font-size:58px;
             font-weight:800;
-            color:#111827;
+            color:#17406D;
+            line-height:1.0;
+            margin-bottom:8px;
         ">
             {latest_total:,}
+        </div>
+
+        <div style="
+            font-size:18px;
+            font-weight:400;
+            color:#6b7280;
+        ">
+            DOT/1,000 patient-days
+        </div>
+
         </div>
 
         <!-- 오른쪽 변화율 -->
@@ -705,7 +771,7 @@ if st.session_state.menu == "항생제 사용량":
             color:#374151;
             margin-bottom:8px;
         ">
-            전월 대비
+            지난 달 대비
         </div>
 
         <div style="
@@ -734,15 +800,229 @@ if st.session_state.menu == "항생제 사용량":
             margin-bottom:20px;
         ">
 
-        <!-- 타이틀 -->
+        <!-- 제목 영역 -->
+        <div style="
+            margin-bottom:0px;
+        ">
+
+        <!-- 타이틀 + 안내 아이콘 -->
+        <div style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+        ">
+
         <div style="
             font-size:20px;
             font-weight:800;
             color:#102a43;
-            margin-bottom:22px;
         ">
-            이달의 제한항생제 사용량 (DOT/1,000 patients-day)
+            이달의 제한항생제 사용량
         </div>
+
+        <!-- i 아이콘 -->
+        <div class="tooltip-container" style="
+            position:relative;
+            display:inline-block;
+            cursor:pointer;
+        ">
+
+        <!-- 동그란 i -->
+        <div style="
+            width:24px;
+            height:24px;
+            border-radius:50%;
+            background:#e8eef7;
+            color:#17406D;
+            font-size:16px;
+            font-weight:700;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        ">
+            i
+        </div>
+
+        <!-- 툴팁 -->
+        <div class="tooltip-box" style="
+            visibility:hidden;
+            opacity:0;
+            transition:0.2s;
+            position:absolute;
+            top:35px;
+            left:0;
+            width:345px;
+            background:#0F2E4F;
+            color:white;
+            padding:18px 20px;
+            border-radius:16px;
+            box-shadow:0 8px 24px rgba(0,0,0,0.18);
+            z-index:999;
+            font-size:15px;
+            line-height:1.6;
+        ">
+
+        <div style="
+            font-size:17px;
+            font-weight:800;
+            margin-bottom:10px;
+        ">
+            제한항생제란?
+        </div>
+
+        무분별하고 광범위한 사용 시 항생제 내성을 유발하거나,
+        기타의 이유로 별도의 전문적인 관리가 필요하다고 판단되는 항생제로
+        감염내과 전문의의 승인 후 사용 가능한 항생제입니다.
+        <br>
+        -----------------------------------------------------------------<br>
+        <table style="
+            width:100%;
+            border-collapse:collapse;
+            margin-top:8px;
+            font-size:14px;
+        ">
+
+        <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            Cephalosporins
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            Ceftazidime, Ceftazidime/Avibactam, Cefepime, Ceftolozane/Tazobactam
+        </td>
+        </tr>
+
+        <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            Penicillins
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            Piperacillin/Tazobactam, Piperacillin/Sulbactam
+        </td>
+        </tr>
+        
+        <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            Carbapenems
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            Ertapenem, Imipenem/Cilastatin, Meropenem
+        </td>
+        </tr>
+
+       <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            Glycopeptides
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            Vancomycin, Teicoplanin
+        </td>
+        </tr>
+
+       <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            Quinolones
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            Moxifloxacin
+        </td>
+        </tr>
+
+       <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            Tetracyclines
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            Tigecycline
+        </td>
+        </tr>
+
+       <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            기타
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            Linezolid, Colistin 등
+        </td>
+        </tr>
+
+        </table>
+
+
+        </div>
+        </div>
+        </div>
+        <div style="height:22px;"></div>
+
+        <style>
+        .tooltip-container:hover .tooltip-box {{
+            visibility:visible !important;
+            opacity:1 !important;
+        }}
+
+        </style>
 
         <!-- 본문 -->
         <div style="
@@ -751,13 +1031,27 @@ if st.session_state.menu == "항생제 사용량":
             align-items:center;
         ">
 
-        <!-- 왼쪽 숫자 -->
+        <!-- 왼쪽 숫자 + 단위 -->
+        <div>
+
         <div style="
             font-size:58px;
             font-weight:800;
-            color:#111827;
+            color:#17406D;
+            line-height:1.0;
+            margin-bottom:8px;
         ">
             {latest_restricted:,}
+        </div>
+
+        <div style="
+            font-size:18px;
+            font-weight:400;
+            color:#6b7280;
+        ">
+            DOT/1,000 patient-days
+        </div>
+
         </div>
 
         <!-- 오른쪽 변화율 -->
@@ -773,7 +1067,7 @@ if st.session_state.menu == "항생제 사용량":
             color:#374151;
             margin-bottom:8px;
         ">
-            전월 대비
+            지난 달 대비
         </div>
 
         <div style="
@@ -790,6 +1084,140 @@ if st.session_state.menu == "항생제 사용량":
 
         </div>
         """, unsafe_allow_html=True)
+
+    with open("pill.png", "rb") as image_file:
+        pill_base64 = base64.b64encode(
+            image_file.read()
+        ).decode()
+
+    with open("icon1.png", "rb") as image_file:
+        icon1_base64 = base64.b64encode(
+            image_file.read()
+        ).decode()
+
+    with open("icon2.png", "rb") as image_file:
+        icon2_base64 = base64.b64encode(
+            image_file.read()
+        ).decode()
+
+    st.markdown(f"""
+    <div style="
+        background:#f1f7fe;
+        border:1px solid #d8e2ee;
+        border-radius:28px;
+        padding:24px 24px;
+        margin-top:18px;
+        box-shadow:0 4px 14px rgba(0,0,0,0.05);
+        display:flex;
+        align-items:center;
+        margin-bottom:36px;
+    ">
+
+    <!-- 왼쪽 pill -->
+    <div style="
+        width:30%;
+        text-align:center;
+    "> 
+        <img src="data:image/png;base64,{pill_base64}" style="width:260px;">
+    </div>
+
+    <!-- 가운데 세로선 -->
+    <div style="
+        width:1px;
+        align-self:stretch;
+        background:#d9e4ef;
+        margin:0 40px;
+    "></div>
+
+    <!-- 오른쪽 설명 -->
+    <div style="
+        flex:1;
+    ">
+
+    <!-- 위 compartment -->
+    <div style="
+        display:flex;
+        align-items:flex-start;
+        gap:24px;
+    ">
+
+    <!-- 아이콘 -->
+    <img src="data:image/png;base64,{icon1_base64}" style=" width:72px; height:72px;">
+
+    <!-- 텍스트 -->
+    <div>
+
+    <div style="
+        font-size:24px;
+        font-weight:800;
+        color:#1d4ed8;
+        margin-bottom:12px;
+    ">
+        DOT (Days Of Therapy)의 정의
+    </div>
+
+    <div style="
+        font-size:18px;
+        line-height:1.8;
+        color:#374151;
+        font-weight:700;
+    ">
+        환자에게 항생제가 투여된 일 수의 총합을 의미합니다.<br>
+        같은 날 두 가지 항생제를 사용한 경우 각각 1일로 계산합니다.
+    </div>
+
+    </div>
+
+    </div>
+
+    <!-- 중간 점선 -->
+    <div style="
+        border-top:2px dashed #d7e3f0;
+        margin:34px 0;
+    "></div>
+
+    <!-- 아래 compartment -->
+    <div style="
+        display:flex;
+        align-items:flex-start;
+        gap:24px;
+    ">
+
+    <!-- 아이콘 -->
+    <img src="data:image/png;base64,{icon2_base64}" style=" width:72px; height:72px;">
+
+    <!-- 텍스트 -->
+    <div>
+
+    <div style="
+        font-size:24px;
+        font-weight:800;
+        color:#10b981;
+        margin-bottom:12px;
+    ">
+        DOT/1,000 patient-days의 정의
+    </div>
+
+    <div style="
+        font-size:18px;
+        line-height:1.8;
+        color:#374151;
+        font-weight:700;
+    ">
+        전체 환자의 재원일수 1,000일당 항생제 투여일수(DOT)로,<br>
+        기간별 입원 규모를 보정한 항생제 사용량 지표입니다.
+    </div>
+
+    </div>
+
+    </div>
+
+    </div>
+
+    </div>
+    """, unsafe_allow_html=True)
+
+    
 
     # =========================
     # 첫번째 그래프
@@ -815,7 +1243,7 @@ if st.session_state.menu == "항생제 사용량":
     # 컬럼명 변경
     summary1.columns = [
         "분기",
-        "항생제 사용량 (DOT/1,000 patients-day)"
+        "항생제 사용량 (DOT/1,000 patient-days)"
     ]
 
     # 분기 순서 지정
@@ -833,8 +1261,8 @@ if st.session_state.menu == "항생제 사용량":
     fig1 = px.bar(
         summary1,
         x="분기",
-        y="항생제 사용량 (DOT/1,000 patients-day)",
-        text="항생제 사용량 (DOT/1,000 patients-day)",
+        y="항생제 사용량 (DOT/1,000 patient-days)",
+        text="항생제 사용량 (DOT/1,000 patient-days)",
 
         category_orders={
             "분기": quarter_order
@@ -904,19 +1332,19 @@ if st.session_state.menu == "항생제 사용량":
     )
 
     # 컬럼명 변경
-    summary2.columns = ["분기", "성분통합키", "항생제 사용량(DOT/1,000 patients-day)"]
+    summary2.columns = ["분기", "성분통합키", "항생제 사용량(DOT/1,000 patient-days)"]
 
     # TOP10 계산
     top10 = (
         summary2
-        .groupby("성분통합키")["항생제 사용량(DOT/1,000 patients-day)"]
+        .groupby("성분통합키")["항생제 사용량(DOT/1,000 patient-days)"]
         .sum()
         .reset_index()
     )
 
     top10 = (
         top10
-        .sort_values("항생제 사용량(DOT/1,000 patients-day)", ascending=False)
+        .sort_values("항생제 사용량(DOT/1,000 patient-days)", ascending=False)
         .head(10)
     )
 
@@ -945,7 +1373,7 @@ if st.session_state.menu == "항생제 사용량":
     fig2 = px.line(
         summary2,
         x="분기",
-        y="항생제 사용량(DOT/1,000 patients-day)",
+        y="항생제 사용량(DOT/1,000 patient-days)",
         color="성분통합키",
         markers=True,
 
@@ -1126,7 +1554,7 @@ if st.session_state.menu == "항생제 사용량":
         height=440,
 
         xaxis_title=None,
-        yaxis_title="항생제 사용량 (DOT/1,000 patients-day)",
+        yaxis_title="항생제 사용량 (DOT/1,000 patient-days)",
 
         paper_bgcolor='rgba(255,255,255,0)',
         plot_bgcolor='rgba(255,255,255,0)',
@@ -1239,7 +1667,7 @@ if st.session_state.menu == "항생제 사용량":
         height=440,
 
         xaxis_title=None,
-        yaxis_title="항생제 사용량 (DOT/1,000 patients-day)",
+        yaxis_title="항생제 사용량 (DOT/1,000 patient-days)",
 
         paper_bgcolor='rgba(255,255,255,0)',
         plot_bgcolor='rgba(255,255,255,0)',
@@ -1363,7 +1791,7 @@ elif st.session_state.menu == "ASP 활동":
     else:
 
         intervention_arrow = "▼"
-        intervention_color = "#3b82f6"
+        intervention_color = "#10B981"
 
     # -------------------------
     # 수용률
@@ -1395,7 +1823,7 @@ elif st.session_state.menu == "ASP 활동":
     else:
 
         accept_arrow = "▼"
-        accept_color = "#3b82f6"
+        accept_color = "#10B981"
 
     # =========================
     # KPI 카드
@@ -1418,15 +1846,259 @@ elif st.session_state.menu == "ASP 활동":
             margin-bottom:20px;
         ">
 
-        <!-- 타이틀 -->
+        <!-- 제목 영역 -->
+        <div style="
+            margin-bottom:0px;
+        ">
+
+        <!-- 타이틀 + 안내 아이콘 -->
+        <div style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+        ">
+
+        <!-- 제목 -->
         <div style="
             font-size:20px;
             font-weight:800;
             color:#102a43;
-            margin-bottom:22px;
         ">
             이달의 ASP 중재건수
         </div>
+
+        <!-- i 아이콘 -->
+        <div class="tooltip-container" style="
+            position:relative;
+            display:inline-block;
+            cursor:pointer;
+        ">
+
+        <!-- 동그란 i -->
+        <div style="
+            width:24px;
+            height:24px;
+            border-radius:50%;
+            background:#e8eef7;
+            color:#17406D;
+            font-size:16px;
+            font-weight:700;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        ">
+            i
+        </div>
+
+        <!-- 툴팁 -->
+        <div class="tooltip-box" style="
+            visibility:hidden;
+            opacity:0;
+            transition:0.2s;
+            position:absolute;
+            top:35px;
+            left:0;
+            width:345px;
+            background:#0F2E4F;
+            color:white;
+            padding:18px 20px;
+            border-radius:16px;
+            box-shadow:0 8px 24px rgba(0,0,0,0.18);
+            z-index:999;
+            font-size:15px;
+            line-height:1.7;
+        ">
+
+        <div style="
+            font-size:17px;
+            font-weight:700;
+            margin-bottom:10px;
+        ">
+            ASP란?
+        </div>
+
+        항생제 적정사용 관리 프로그램(Antimicrobial Stewardship
+        Program, ASP)은 전문관리팀이 기관 내 항생제 처방과정을 중재, 관리
+        함으로써 부적절한 항생제 사용을 줄이고 적절한 사용을 유도하기 위한
+        체계입니다.<br>
+        -----------------------------------------------------------------<br>
+        본원은 2024년 11월부터 항생제 적정사용관리 시범사업에 참여하며
+        사업 활동 및 항생제 중재를 수행하고 있습니다.
+        <table style="
+            width:100%;
+            border-collapse:collapse;
+            margin-top:8px;
+            font-size:14px;
+        ">
+
+        <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            24년 11월
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            ASP 시범사업 참여 및 <br>
+            ASP 전담팀 구성
+        </td>
+        </tr>
+
+        <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            24년 12월
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            항생제 처방 지침 교육 및<br>
+            항생제 적정사용 전직원 교육
+        </td>
+        </tr>
+        
+        <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            25년 2월
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            ASP 중재 활동을 위한<br>
+            전산 구축 완료
+        </td>
+        </tr>
+
+       <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            25년 4월
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            원내 항생제 사용 지침 제정
+        </td>
+        </tr>
+
+       <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            25년 7월
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            항생제 처방 지침 교육<br>
+            항생제 적정사용 전직원 교육
+        </td>
+        </tr>
+
+       <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            25년 11월
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            항생제 처방 지침 전공의 교육 및 항생제 사용 지침 전산화
+        </td>
+        </tr>
+
+       <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            26년 1월
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            1차년도 시범사업 결과 보고<br>
+            2차년도 시범사업 참여
+        </td>
+        </tr>
+
+        <tr>
+        <td style="
+            background:rgba(255,255,255,0.12);
+            padding:10px 12px;
+            font-weight:700;
+            border-radius:8px 0 0 8px;
+            width:90px;
+        ">
+            26년 5월
+        </td>
+
+        <td style="
+            padding:10px 12px;
+        ">
+            1차년도 시범사업 평가 완료
+        </td>
+        </tr>
+
+        </table>
+
+        </div>
+
+        </div>
+
+        </div>
+
+        </div>
+
+        <!-- 제목과 숫자 간격 유지 -->
+        <div style="height:22px;"></div>
+
+        <style>
+        .tooltip-container:hover .tooltip-box {{
+            visibility:visible !important;
+            opacity:1 !important;
+        }}
+        </style>
 
         <!-- 본문 -->
         <div style="
@@ -1439,9 +2111,19 @@ elif st.session_state.menu == "ASP 활동":
         <div style="
             font-size:58px;
             font-weight:800;
-            color:#111827;
+            color:#17406D;
+            line-height:1.0;
+            margin-bottom:8px;
         ">
             {latest_intervention:,}
+        </div>
+
+        <div style="
+            font-size:18px;
+            font-weight:400;
+            color:#6b7280;
+        ">
+        건
         </div>
 
         <!-- 오른쪽 변화율 -->
@@ -1457,7 +2139,7 @@ elif st.session_state.menu == "ASP 활동":
             color:#374151;
             margin-bottom:8px;
         ">
-            전월 대비
+            지난 달 대비
         </div>
 
         <div style="
@@ -1497,7 +2179,7 @@ elif st.session_state.menu == "ASP 활동":
             color:#102a43;
             margin-bottom:22px;
         ">
-            이달의 수용률
+            이달의 ASP 중재 수용률
         </div>
 
         <!-- 본문 -->
@@ -1511,7 +2193,9 @@ elif st.session_state.menu == "ASP 활동":
         <div style="
             font-size:58px;
             font-weight:800;
-            color:#111827;
+            color:#17406D;
+            line-height:1.0;
+            margin-bottom:8px;
         ">
             {latest_accept:.1f}%
         </div>
@@ -1529,7 +2213,7 @@ elif st.session_state.menu == "ASP 활동":
             color:#374151;
             margin-bottom:8px;
         ">
-            전월 대비
+            지난 달 대비
         </div>
 
         <div style="
@@ -2106,3 +2790,38 @@ elif st.session_state.menu == "ASP 활동":
         config={"displayModeBar": False},
         key="approval_graph"
     )
+
+    with open("제한.png", "rb") as f:
+        restricted_base64 = base64.b64encode(
+            f.read()
+        ).decode()
+
+    # 맨 아래 여백
+    st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
+
+    # 제한.png 표시 박스
+    st.markdown(f"""
+    <div style="
+        background:#a9d8ff;
+        border:1px solid #dbe7f3;
+        border-radius:28px;
+        padding:28px;
+        margin-top:12px;
+        margin-bottom:30px;
+        box-shadow:0 4px 14px rgba(0,0,0,0.05);
+    ">
+
+    <!-- 이미지 -->
+    <div style="
+        display:flex;
+        justify-content:center;
+        align-items:center;
+    ">
+        <img src="data:image/png;base64,{restricted_base64}" style="
+                width:100%;
+                max-width:1200px;
+                border-radius:20px;">
+    </div>
+
+    </div>
+    """, unsafe_allow_html=True)
