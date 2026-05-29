@@ -69,7 +69,11 @@ div[data-testid="stPlotlyChart"] {
 /* 그래프 제목 박스 */
 .chart-title-box {
 
-    background-color: #dbe4ef;
+    background: linear-gradient(
+        135deg,
+        #eaf3ff,
+        #dcecff
+    );
 
     padding: 14px 24px;
 
@@ -84,6 +88,8 @@ div[data-testid="stPlotlyChart"] {
     position: relative;
 
     z-index: 100;
+
+    pointer-events: none;
 
     box-shadow: 0 3px 8px rgba(0,0,0,0.10);
 
@@ -217,15 +223,18 @@ div[data-testid="stToolbar"] {
 
     margin-top: 12px;
 }
+/* select 전체 */
 div[data-baseweb="select"] {
 
     border-radius: 16px !important;
 
     overflow: hidden;
 
-    border: 1px solid #bcc8d6;
+    border: 1px solid #d1d5db;
 
-    background-color: #d7e0eb;
+    background: #e5e7eb;
+
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
 }
 
 /* 내부 wrapper */
@@ -233,7 +242,7 @@ div[data-baseweb="select"] > div {
 
     border-radius: 16px !important;
 
-    background-color: #d7e0eb !important;
+    background: #f3f4f6 !important;
 
     min-height: 48px;
 
@@ -245,7 +254,7 @@ div[data-baseweb="select"] > div {
 /* input 영역 */
 div[data-baseweb="select"] input {
 
-    background-color: #d7e0eb !important;
+    background: #f3f4f6 !important;
 
     border-radius: 16px !important;
 
@@ -254,18 +263,10 @@ div[data-baseweb="select"] input {
     padding-top: 2px;
 }
 
-/* 실제 선택 텍스트 */
-div[data-baseweb="select"] span {
-
-    display: flex;
-
-    align-items: center;
-}
-
 /* hover */
 div[data-baseweb="select"]:hover {
 
-    border-color: #aebccd;
+    border-color: #bfc7d1;
 
     transition: 0.2s;
 }
@@ -303,7 +304,11 @@ div[data-baseweb="select"] input:focus {
 /* 하단 섹션 제목 박스 */
 .section-title-box {
 
-    background-color: #dfeaf7;
+    background: linear-gradient(
+        135deg,
+        #dbeafe,
+        #c7dcf7
+    );
 
     border-radius: 22px;
 
@@ -317,7 +322,7 @@ div[data-baseweb="select"] input:focus {
 
     text-align: center;
 
-    border: 1px solid #cddff3;
+    border: 1px solid #c5d9f1;
 }
 
 /* 하단 섹션 제목 글씨 */
@@ -550,16 +555,16 @@ with center:
     with col2:
 
         st.button(
-            "📋 ASP 활동",
+            "📋 ASP 중재",
             use_container_width=True,
             key="menu2",
             type=(
                 "secondary"
-                if st.session_state.menu == "ASP 활동"
+                if st.session_state.menu == "ASP 중재"
                 else "primary"
             ),
             on_click=lambda: st.session_state.update(
-                menu="ASP 활동"
+                menu="ASP 중재"
             )
         )
 
@@ -1738,7 +1743,7 @@ if st.session_state.menu == "항생제 사용량":
 
             st.toast("데이터를 최신화했습니다.")
 
-elif st.session_state.menu == "ASP 활동":
+elif st.session_state.menu == "ASP 중재":
     
     @st.cache_data(ttl=86400)
     def load_inter_data():
@@ -3027,3 +3032,130 @@ elif st.session_state.menu == "ASP 전담팀":
 
         </div>
         """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="section-title-box">
+        <div class="section-title-text">
+            ASP 전담팀 활동 일정
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="
+        background:white;
+        border-radius:28px;
+        padding:30px;
+        box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    ">
+
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:18px;
+    ">
+
+    <!-- 카드1 -->
+    <div style="flex:1; text-align:center;">
+
+    <div style="
+        background:#214d99;
+        color:white;
+        padding:10px 18px;
+        border-radius:14px;
+        font-weight:800;
+        display:inline-block;
+        margin-bottom:14px;
+    ">
+        26년 6월
+    </div>
+
+    <div style="
+        font-size:18px;
+        font-weight:700;
+        color:#1f2937;
+        line-height:1.6;
+    ">
+        원내 항생제 사용지침 개정<br>
+        ASP 대시보드 구축<br>
+        ASP 리포트 전산 구축
+    </div>
+
+    </div>
+
+    <!-- 화살표 -->
+    <div style="
+        font-size:34px;
+        color:#9ca3af;
+        margin-top:18px;
+    ">
+        →
+    </div>
+
+    <!-- 카드2 -->
+    <div style="flex:1; text-align:center;">
+
+    <div style="
+        background:#214d99;
+        color:white;
+        padding:10px 18px;
+        border-radius:14px;
+        font-weight:800;
+        display:inline-block;
+        margin-bottom:14px;
+    ">
+        26년 7월
+    </div>
+
+    <div style="
+        font-size:18px;
+        font-weight:700;
+        color:#1f2937;
+        line-height:1.6;
+    ">
+        항생제 처방 지침 교육 및<br>
+        항생제 적정사용 교육
+    </div>
+
+    </div>
+
+    <!-- 화살표 -->
+    <div style="
+        font-size:34px;
+        color:#9ca3af;
+        margin-top:18px;
+    ">
+        →
+    </div>
+    <!-- 카드3 -->
+    <div style="flex:1; text-align:center;">
+
+    <div style="
+        background:#214d99;
+        color:white;
+        padding:10px 18px;
+        border-radius:14px;
+        font-weight:800;
+        display:inline-block;
+        margin-bottom:14px;
+    ">
+        26년 8월
+    </div>
+
+    <div style="
+        font-size:18px;
+        font-weight:700;
+        color:#1f2937;
+        line-height:1.6;
+    ">
+        2026년 상반기<br>
+        항생제사용관리위원회 개최
+
+    </div>
+
+    </div>
+
+    </div>
+    </div>
+    """, unsafe_allow_html=True)
