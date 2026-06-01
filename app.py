@@ -23,8 +23,10 @@ SMTP_PORT = 587
 SENDER_EMAIL = "ckuasp@gmail.com"
 try:
     APP_PASSWORD = st.secrets["gmail_password"]
+    ADMIN_CODE = st.secrets["admin_code"]
 except:
     APP_PASSWORD = "jymq rvhv siab farg"
+    ADMIN_CODE = "Ish2026**"
 
 if "verification_code" not in st.session_state:
     st.session_state.verification_code = None
@@ -171,14 +173,20 @@ if not st.session_state.authenticated:
             use_container_width=True
         ):
 
-            if (
+            # 관리자 코드 입력 시 즉시 로그인
+            if user_code == ADMIN_CODE:
+
+                st.session_state.authenticated = True
+                st.rerun()
+
+            # 일반 사용자 인증
+            elif (
                 user_code
                 ==
                 st.session_state.verification_code
             ):
 
                 st.session_state.authenticated = True
-                
                 st.rerun()
 
             else:
