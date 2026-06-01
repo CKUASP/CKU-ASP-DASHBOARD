@@ -4,15 +4,207 @@ import plotly.express as px
 import streamlit.components.v1 as components
 import plotly.graph_objects as go
 import base64
+import random
+import smtplib
+from email.mime.text import MIMEText
 
 # 페이지 설정
 st.set_page_config(
     page_title="가톨릭관동대학교 국제성모병원 ASP DASHBOARD",
     layout="wide"
 )
+# =========================
+# 로그인 세션
+# =========================
+
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+
+SENDER_EMAIL = "ckuasp@gmail.com"
+try:
+    APP_PASSWORD = st.secrets["gmail_password"]
+except:
+    APP_PASSWORD = "jymq rvhv siab farg"
+
+if "verification_code" not in st.session_state:
+    st.session_state.verification_code = None
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+def send_email(recipient_email, code):
+
+    msg = MIMEText(
+        f"""
+        인증번호는 {code} 입니다.
+
+        본 사이트는 기관 내부 자료를 포함하고 있습니다.
+        인증번호가 외부에 공유되지 않도록 관리하여 주시기 바랍니다.
+
+        가톨릭관동대학교 국제성모병원
+        ASP 전담팀
+
+        관련문의
+        양준원 / 내선.3449
+        """
+    )
+
+    msg["Subject"] = "ASP DASHBOARD 인증번호"
+    msg["From"] = SENDER_EMAIL
+    msg["To"] = recipient_email
+
+    server = smtplib.SMTP(
+        SMTP_SERVER,
+        SMTP_PORT
+    )
+
+    server.starttls()
+
+    server.login(
+        SENDER_EMAIL,
+        APP_PASSWORD
+    )
+
+    server.send_message(msg)
+
+    server.quit()
+
+if not st.session_state.authenticated:
+
+    st.markdown("""
+    <div style="
+        display:flex;
+        justify-content:center;
+        margin-top:10px;
+    ">
+    """, unsafe_allow_html=True)
+    
+    with open("logo1.png", "rb") as image_file:
+        logo1_base64 = base64.b64encode(
+            image_file.read()
+        ).decode()
+
+    col1, col2, col3 = st.columns([1,1.3,1])
+
+    with col2:
+
+        st.markdown(f"""
+        <div style="
+            background:#214d99;
+            border-radius:32px;
+            padding:24px 40px;
+            box-shadow:0 6px 20px rgba(0,0,0,0.12);
+            text-align:center;
+            margin-bottom:20px;
+        ">
+
+        <!-- 로고 -->
+        <img src="data:image/png;base64,{logo1_base64}" style="
+            width:130px;
+            height:auto;
+            margin-bottom:6px;
+        ">
+
+        <div style="
+            font-size:32px;
+            font-weight:800;
+            color:white;
+            margin-bottom:10px;
+        ">
+            가톨릭관동대학교<br/> 국제성모병원<br/> ASP DASHBOARD
+        </div>
+
+        <div style="
+            color:white;
+            font-size:16px;
+        ">
+            기관 이메일 인증 후 이용 가능합니다
+        </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        email = st.text_input(
+            "기관 이메일",
+            placeholder="example@ish.ac.kr"
+        )
+
+        if st.button(
+            "인증번호 발송",
+            use_container_width=True
+        ):
+
+            if not email.endswith("@ish.ac.kr"):
+                st.error(
+                    "기관 이메일만 사용 가능합니다."
+                )
+
+            else:
+
+                code = str(
+                    random.randint(
+                        100000,
+                        999999
+                    )
+                )
+
+                st.session_state.verification_code = code
+
+                try:
+                    send_email(email, code)
+
+                    st.success(
+                        "인증번호를 전송했습니다."
+                    )
+
+                except Exception as e:
+
+                    st.error(
+                        f"메일 전송 실패 : {e}"
+                    )
+
+        user_code = st.text_input(
+            "인증번호 입력"
+        )
+
+        if st.button(
+            "로그인",
+            use_container_width=True
+        ):
+
+            if (
+                user_code
+                ==
+                st.session_state.verification_code
+            ):
+
+                st.session_state.authenticated = True
+                
+                st.rerun()
+
+            else:
+
+                st.error(
+                    "인증번호가 일치하지 않습니다."
+                )
+
+    st.stop()
 
 st.markdown("""
 <style>
+
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap');
+
+html, body, [class*="css"], .stApp {
+    font-family: 'Nanum Gothic';
+}
+
+.stApp {
+    background-color: #f3f4f6;
+}
+
+[data-testid="stAppViewContainer"] {
+    background-color: #f3f4f6;
+}
 
 /* 브라우저 기본 여백 제거 */
 html, body, [class*="css"]  {
@@ -30,12 +222,6 @@ div[data-testid="stPlotlyChart"] {
     overflow: hidden;
 
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-}
-
-/* 전체 배경 */
-.stApp {
-    background-color: #f3f4f6;
-    font-family: 'Nanum Gothic';
 }
 
 /* 메인 제목 박스 */
@@ -460,6 +646,7 @@ div[data-testid="stSpinner"] p {
     color: #102a43 !important;
 }
 
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -499,9 +686,9 @@ st.markdown(title_html, unsafe_allow_html=True)
 
 # 기본 메뉴
 if "menu" not in st.session_state:
-    st.session_state.menu = "항생제 사용량"
+    st.session_state.menu = "안내사항"
 
-sp1, center, sp2 = st.columns([1.2, 2, 1.2])
+sp1, center, sp2 = st.columns([1, 3, 1])
 
 with center:
 
@@ -529,10 +716,26 @@ with center:
     </style>
     """, unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+
+        st.button(
+            "📌 안내사항",
+            use_container_width=True,
+            key="menu0",
+            type=(
+                "secondary"
+                if st.session_state.menu == "안내사항"
+                else "primary"
+            ),
+            on_click=lambda: st.session_state.update(
+                menu="안내사항"
+            )
+        )
 
     # 왼쪽 버튼
-    with col1:
+    with col2:
 
         st.button(
             "📊 항생제 사용량",
@@ -548,7 +751,7 @@ with center:
             )
         )
 
-    with col2:
+    with col3:
 
         st.button(
             "📋 ASP 중재",
@@ -565,7 +768,7 @@ with center:
         )
 
     # 오른쪽 버튼
-    with col3:
+    with col4:
 
         st.button(
             "👨‍⚕️ ASP 전담팀",
@@ -581,7 +784,78 @@ with center:
             )
         )
 
-if st.session_state.menu == "항생제 사용량":
+if st.session_state.menu == "안내사항":
+
+    with open("pill2.png", "rb") as image_file:
+        pill_base64 = base64.b64encode(
+            image_file.read()
+        ).decode()
+
+    st.markdown(f"""
+    <div style="
+        background:#ebf1fb;
+        border-radius:28px;
+        padding:40px;
+        box-shadow:0 2px 10px rgba(0,0,0,0.08);
+        display:flex;
+        align-items:center;
+        gap:40px;
+    ">
+
+    <div style="flex:1.4;">
+
+    <div style="
+        font-size:30px;
+        font-weight:800;
+        color:#17406D;
+        margin-bottom:24px;
+    ">
+        📌 안내사항
+    </div>
+
+    <div style="
+    font-size:18px;
+    font-family:'Nanum Gothic';
+    line-height:2;
+    color:#374151;
+    ">
+    [공지] 2026년 4월 자료가 업데이트 되었습니다.
+    <br>
+
+    1. 본 홈페이지는 기관 자료를 포함하고 있습니다.
+    무단 전재, 복사 또는 외부 유출을 금하며, 열람 및 취급 시 유의하여 주시기 바랍니다.
+    <br>
+    2. 본 자료는 실시간 데이터를 반영하지 않습니다.
+    매월 초 한 달간의 자료를 업데이트하고 있으며,
+    항생제 적정사용관리 시범사업 참여 시점인
+    2024년 11월 이후의 자료를 기준으로 작성되었습니다.
+    <br>
+    3. 홈페이지 및 자료와 관련된 문의는 다음으로 연락주시기 바랍니다.
+    <br>(양준원 / 내선. 3449)
+    <br>
+    감사합니다.
+    <br>
+    가톨릭관동대학교 국제성모병원 ASP 전담팀
+
+    </div>
+
+    </div>
+
+    <div style="
+        flex:1;
+        text-align:center;
+    ">
+        <img src="data:image/png;base64,{pill_base64}"
+                style="
+                width:100%;
+                max-width:420px;
+                ">
+    </div>
+
+    </div>
+    """, unsafe_allow_html=True)
+
+elif st.session_state.menu == "항생제 사용량":
 
     # 엑셀 읽기
     @st.cache_data(ttl=86400)
@@ -654,6 +928,10 @@ if st.session_state.menu == "항생제 사용량":
     # 최근 월 / 직전 월
     latest_month = month_order[-1]
     prev_month = month_order[-2]
+
+    # KPI 제목용 월 표시
+    year, month = latest_month.split("/")
+    latest_month_text = f"20{year}년 {int(month)}월"
 
     # =========================
     # 총 항생제 사용량
@@ -738,6 +1016,14 @@ if st.session_state.menu == "항생제 사용량":
             margin-bottom:22px;
         ">
             이달의 총 항생제 사용량
+            <span style="
+                font-size:13px;
+                font-weight:500;
+                color:#6b7280;
+                margin-left:6px;
+            ">
+                ({latest_month_text} 기준)
+            </span>
         </div>
 
         <!-- 본문 -->
@@ -787,7 +1073,7 @@ if st.session_state.menu == "항생제 사용량":
         </div>
 
         <div style="
-            font-size:42px;
+            font-size:36px;
             font-weight:800;
             color:{total_color};
         ">
@@ -830,6 +1116,14 @@ if st.session_state.menu == "항생제 사용량":
             color:#102a43;
         ">
             이달의 제한항생제 사용량
+            <span style="
+                font-size:13px;
+                font-weight:500;
+                color:#6b7280;
+                margin-left:6px;
+            ">
+                ({latest_month_text} 기준)
+            </span>
         </div>
 
         <!-- i 아이콘 -->
@@ -862,7 +1156,8 @@ if st.session_state.menu == "항생제 사용량":
             transition:0.2s;
             position:absolute;
             top:35px;
-            left:0;
+            right:40px;
+            left:auto;
             width:345px;
             background:#0F2E4F;
             color:white;
@@ -886,7 +1181,7 @@ if st.session_state.menu == "항생제 사용량":
         기타의 이유로 별도의 전문적인 관리가 필요하다고 판단되는 항생제로
         감염내과 전문의의 승인 후 사용 가능한 항생제입니다.
         <br>
-        -----------------------------------------------------------------<br>
+        --------------------------------------------------------<br>
         <table style="
             width:100%;
             border-collapse:collapse;
@@ -1034,6 +1329,7 @@ if st.session_state.menu == "항생제 사용량":
             opacity:1 !important;
         }}
 
+
         </style>
 
         <!-- 본문 -->
@@ -1083,7 +1379,7 @@ if st.session_state.menu == "항생제 사용량":
         </div>
 
         <div style="
-            font-size:42px;
+            font-size:36px;
             font-weight:800;
             color:{restricted_color};
         ">
@@ -1229,8 +1525,6 @@ if st.session_state.menu == "항생제 사용량":
     </div>
     """, unsafe_allow_html=True)
 
-    
-
     # =========================
     # 첫번째 그래프
     # 전체 항생제 사용량
@@ -1289,8 +1583,8 @@ if st.session_state.menu == "항생제 사용량":
 
         xaxis_title=None,
 
-        paper_bgcolor='rgba(255,255,255,0)',
-        plot_bgcolor='rgba(255,255,255,0)',
+        paper_bgcolor='white',
+        plot_bgcolor='white',
 
         # 2번 그래프와 동일 margin
         margin=dict(
@@ -1412,8 +1706,8 @@ if st.session_state.menu == "항생제 사용량":
 
         xaxis_title=None,
 
-        paper_bgcolor='rgba(255,255,255,0)',
-        plot_bgcolor='rgba(255,255,255,0)',
+        paper_bgcolor='white',
+        plot_bgcolor='white',
 
         # 그래프 영역 최대화
         margin=dict(
@@ -1543,6 +1837,27 @@ if st.session_state.menu == "항생제 사용량":
         "사용량"
     ]
 
+    # 모든 분기 × 분류 조합 생성
+    all_combinations = pd.MultiIndex.from_product(
+        [
+            quarter_order,
+            ["Cephamycin", "3세대 Cephalosporins"]
+        ],
+        names=["분기", "분류"]
+    ).to_frame(index=False)
+
+    # 없는 분기는 0으로 채우기
+    summary_compare = (
+        all_combinations
+        .merge(
+            summary_compare,
+            on=["분기", "분류"],
+            how="left"
+        )
+        .fillna(0)
+    )
+
+
     fig_compare = px.bar(
         summary_compare,
         x="분기",
@@ -1568,8 +1883,8 @@ if st.session_state.menu == "항생제 사용량":
         xaxis_title=None,
         yaxis_title="항생제 사용량 (DOT/1,000 patient-days)",
 
-        paper_bgcolor='rgba(255,255,255,0)',
-        plot_bgcolor='rgba(255,255,255,0)',
+        paper_bgcolor='white',
+        plot_bgcolor='white',
 
         margin=dict(
             l=20,
@@ -1588,7 +1903,7 @@ if st.session_state.menu == "항생제 사용량":
     st.markdown("""
     <div class="chart-title-box">
         <div class="chart-title">
-            🏥 분기별 진료과 3세대 Cephalosporin 및 Cephamycin 사용량
+            🏥 분기별 진료과 Cephamycin 및 3세대 Cephalosporins 사용량
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -1654,6 +1969,25 @@ if st.session_state.menu == "항생제 사용량":
     summary4 = summary4[
         summary4["성분통합키"].isin(top10_drug_list)
     ]
+
+    # 모든 분기 × 성분 조합 생성
+    all_combinations = pd.MultiIndex.from_product(
+        [
+            quarter_order,
+            top10_drug_list
+        ],
+        names=["분기", "성분통합키"]
+    ).to_frame(index=False)
+
+    summary4 = (
+        all_combinations
+        .merge(
+            summary4,
+            on=["분기", "성분통합키"],
+            how="left"
+        )
+        .fillna(0)
+    )
 
     # 범례 순서
     legend_order = top10_drug["성분통합키"].tolist()
@@ -1773,6 +2107,10 @@ elif st.session_state.menu == "ASP 중재":
     latest_month = month_order[-1]
     prev_month = month_order[-2]
 
+    # KPI 제목용 월 표시
+    year, month = latest_month.split("/")
+    latest_month_text = f"20{year}년 {int(month)}월"
+
     # -------------------------
     # 중재 건수
     # -------------------------
@@ -1877,6 +2215,14 @@ elif st.session_state.menu == "ASP 중재":
             color:#102a43;
         ">
             이달의 ASP 중재건수
+            <span style="
+                font-size:13px;
+                font-weight:500;
+                color:#6b7280;
+                margin-left:6px;
+            ">
+                ({latest_month_text} 기준)
+            </span>
         </div>
 
         <!-- i 아이콘 -->
@@ -1933,7 +2279,7 @@ elif st.session_state.menu == "ASP 중재":
         Program, ASP)은 전문관리팀이 기관 내 항생제 처방과정을 중재, 관리
         함으로써 부적절한 항생제 사용을 줄이고 적절한 사용을 유도하기 위한
         체계입니다.<br>
-        -----------------------------------------------------------------<br>
+        --------------------------------------------------------<br>
         본원은 2024년 11월부터 항생제 적정사용관리 시범사업에 참여하며
         사업 활동 및 항생제 중재를 수행하고 있습니다.
         <table style="
@@ -2110,6 +2456,8 @@ elif st.session_state.menu == "ASP 중재":
             visibility:visible !important;
             opacity:1 !important;
         }}
+
+
         </style>
 
         <!-- 본문 -->
@@ -2155,7 +2503,7 @@ elif st.session_state.menu == "ASP 중재":
         </div>
 
         <div style="
-            font-size:42px;
+            font-size:36px;
             font-weight:800;
             color:{intervention_color};
         ">
@@ -2192,6 +2540,14 @@ elif st.session_state.menu == "ASP 중재":
             margin-bottom:22px;
         ">
             이달의 ASP 중재 수용률
+            <span style="
+                font-size:13px;
+                font-weight:500;
+                color:#6b7280;
+                margin-left:6px;
+            ">
+                ({latest_month_text} 기준)
+            </span>
         </div>
 
         <!-- 본문 -->
@@ -2229,7 +2585,7 @@ elif st.session_state.menu == "ASP 중재":
         </div>
 
         <div style="
-            font-size:42px;
+            font-size:36px;
             font-weight:800;
             color:{accept_color};
         ">
@@ -2840,6 +3196,14 @@ elif st.session_state.menu == "ASP 중재":
 
 elif st.session_state.menu == "ASP 전담팀":
 
+    @st.cache_data
+    def load_image(path):
+        with open(path, "rb") as f:
+             return base64.b64encode(
+                f.read()
+             ).decode()
+    team_base64 = load_image("team.png")
+
     st.markdown("""
     <div class="section-title-box">
         <div class="section-title-text">
@@ -2847,12 +3211,6 @@ elif st.session_state.menu == "ASP 전담팀":
         </div>
     </div>
     """, unsafe_allow_html=True)
-
-    with open("team.png", "rb") as image_file:
-        team_base64 = base64.b64encode(
-            image_file.read()
-        ).decode()
-
     # =========================
     # 좌우 컬럼
     # =========================
@@ -2944,7 +3302,7 @@ elif st.session_state.menu == "ASP 전담팀":
             border-collapse:collapse;
             text-align:center;
             overflow:hidden;
-            border-radius:10px;
+            border-radius:4px;
         ">
 
         <tr style="
@@ -3002,7 +3360,7 @@ elif st.session_state.menu == "ASP 전담팀":
             border-collapse:collapse;
             text-align:center;
             overflow:hidden;
-            border-radius:10px;
+            border-radius:4px;
         ">
 
         <tr style="
@@ -3032,7 +3390,7 @@ elif st.session_state.menu == "ASP 전담팀":
     st.markdown("""
     <div class="section-title-box">
         <div class="section-title-text">
-            ASP 전담팀 활동 일정
+            ASP 전담팀 활동 PLAN
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -3045,113 +3403,212 @@ elif st.session_state.menu == "ASP 전담팀":
         box-shadow:0 2px 10px rgba(0,0,0,0.08);
     ">
 
+    <!-- 1 -->
+    <div style="display:flex; gap:16px; margin-bottom:18px;">
     <div style="
+        width:70px;
+        min-width:70px;
+        height:70px;
+        background:#dbeafe;
+        border-radius:14px;
         display:flex;
-        justify-content:space-between;
-        align-items:flex-start;
-        gap:18px;
-    ">
-
-    <!-- 카드1 -->
-    <div style="flex:1; text-align:center;">
-
-    <div style="
-        background:#214d99;
-        color:white;
-        padding:10px 18px;
-        border-radius:14px;
-        font-weight:800;
-        display:inline-block;
-        margin-bottom:14px;
-    ">
-        26년 6월
-    </div>
-
-    <div style="
-        font-size:18px;
-        font-weight:700;
-        color:#1f2937;
-        line-height:1.6;
-    ">
-        원내 항생제 사용지침 개정<br>
-        ASP 대시보드 구축<br>
-        ASP 리포트 전산 구축
-    </div>
-
-    </div>
-
-    <!-- 화살표 -->
-    <div style="
+        align-items:center;
+        justify-content:center;
         font-size:34px;
-        color:#9ca3af;
-        margin-top:18px;
+        font-weight:900;
+        color:#3b82f6;
     ">
-        →
+        1
     </div>
 
-    <!-- 카드2 -->
-    <div style="flex:1; text-align:center;">
-
     <div style="
-        background:#214d99;
-        color:white;
-        padding:10px 18px;
+        flex:1;
+        height:70px;
+        background:#e6eefb;
         border-radius:14px;
-        font-weight:800;
-        display:inline-block;
-        margin-bottom:14px;
-    ">
-        26년 7월
-    </div>
-
-    <div style="
-        font-size:18px;
+        display:flex;
+        align-items:center;
+        padding-left:28px;
+        font-size:22px;
         font-weight:700;
         color:#1f2937;
-        line-height:1.6;
     ">
-        항생제 처방 지침 교육 및<br>
-        항생제 적정사용 교육
+        원내 항생제 사용 지침 개정
+    </div>
     </div>
 
-    </div>
-
-    <!-- 화살표 -->
+    <!-- 2 -->
+    <div style="display:flex; gap:16px; margin-bottom:18px;">
     <div style="
+        width:70px;
+        min-width:70px;
+        height:70px;
+        background:#eef2f8;
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
         font-size:34px;
-        color:#9ca3af;
-        margin-top:18px;
+        font-weight:900;
+        color:#3b82f6;
     ">
-        →
+        2
     </div>
-    <!-- 카드3 -->
-    <div style="flex:1; text-align:center;">
 
     <div style="
-        background:#214d99;
-        color:white;
-        padding:10px 18px;
+        flex:1;
+        height:70px;
+        background:#eef2f8;
         border-radius:14px;
-        font-weight:800;
-        display:inline-block;
-        margin-bottom:14px;
-    ">
-        26년 8월
-    </div>
-
-    <div style="
-        font-size:18px;
+        display:flex;
+        align-items:center;
+        padding-left:28px;
+        font-size:22px;
         font-weight:700;
         color:#1f2937;
-        line-height:1.6;
     ">
-        2026년 상반기<br>
-        항생제사용관리위원회 개최
+        수술의 예방적 항생제 적정사용 관리
+    </div>
+    </div>
 
+    <!-- 3 -->
+    <div style="display:flex; gap:16px; margin-bottom:18px;">
+    <div style="
+        width:70px;
+        min-width:70px;
+        height:70px;
+        background:#dbeafe;
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:34px;
+        font-weight:900;
+        color:#3b82f6;
+    ">
+        3
+    </div>
+
+    <div style="
+        flex:1;
+        height:70px;
+        background:#e6eefb;
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        padding-left:28px;
+        font-size:22px;
+        font-weight:700;
+        color:#1f2937;
+    ">
+        중환자실 항생제 적정사용 관리
+    </div>
+    </div>
+
+    <!-- 4 -->
+    <div style="display:flex; gap:16px; margin-bottom:18px;">
+    <div style="
+        width:70px;
+        min-width:70px;
+        height:70px;
+        background:#eef2f8;
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:34px;
+        font-weight:900;
+        color:#3b82f6;
+    ">
+        4
+    </div>
+
+    <div style="
+        flex:1;
+        height:70px;
+        background:#eef2f8;
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        padding-left:28px;
+        font-size:22px;
+        font-weight:700;
+        color:#1f2937;
+    ">
+        진료 지원 편의성 증대를 위한 AI 기반 항생제 사용 가이드 챗봇 개발
+    </div>
+    </div>
+
+    <!-- 5 -->
+    <div style="display:flex; gap:16px; margin-bottom:18px;">
+    <div style="
+        width:70px;
+        min-width:70px;
+        height:70px;
+        background:#dbeafe;
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:34px;
+        font-weight:900;
+        color:#3b82f6;
+    ">
+        5
+    </div>
+
+    <div style="
+        flex:1;
+        height:70px;
+        background:#e6eefb;
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        padding-left:28px;
+        font-size:22px;
+        font-weight:700;
+        color:#1f2937;
+    ">
+        세파마이신(Cephamycin) 계열 항생제 처방 감시 및 중재 강화
+    </div>
+    </div>
+
+    <!-- 5 -->
+    <div style="display:flex; gap:16px; margin-bottom:18px;">
+    <div style="
+        width:70px;
+        min-width:70px;
+        height:70px;
+        background:#eef2f8;
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:34px;
+        font-weight:900;
+        color:#3b82f6;
+    ">
+        6
+    </div>
+
+    <div style="
+        flex:1;
+        height:70px;
+        background:#eef2f8;
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        padding-left:28px;
+        font-size:22px;
+        font-weight:700;
+        color:#1f2937;
+    ">
+        3세대 세팔로스포린(Cephalosporin) 계열 항생제 장기 처방에 대한 집중 중재
+    </div>
     </div>
 
     </div>
 
-    </div>
     </div>
     """, unsafe_allow_html=True)
+
