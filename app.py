@@ -1158,7 +1158,7 @@ elif st.session_state.menu == "항생제 사용량":
             top:35px;
             right:40px;
             left:auto;
-            width:345px;
+            width:540px;
             background:#0F2E4F;
             color:white;
             padding:18px 20px;
@@ -1178,10 +1178,10 @@ elif st.session_state.menu == "항생제 사용량":
         </div>
 
         무분별하고 광범위한 사용 시 항생제 내성을 유발하거나,
-        기타의 이유로 별도의 전문적인 관리가 필요하다고 판단되는 항생제로
-        감염내과 전문의의 승인 후 사용 가능한 항생제입니다.
+        기타의 이유로<br> 별도의 전문적인 관리가 필요하다고 판단되는 항생제로
+        감염내과 전문의의<br> 승인 후 사용 가능한 항생제입니다.
         <br>
-        -----------------------------------------------------------------<br>
+        -----------------------------------------------------------------------------------------------------------<br>
         <table style="
             width:100%;
             border-collapse:collapse;
@@ -2256,7 +2256,7 @@ elif st.session_state.menu == "ASP 중재":
             position:absolute;
             top:35px;
             left:0;
-            width:345px;
+            width:540px;
             background:#0F2E4F;
             color:white;
             padding:18px 20px;
@@ -2272,16 +2272,15 @@ elif st.session_state.menu == "ASP 중재":
             font-weight:700;
             margin-bottom:10px;
         ">
-            ASP란?
+            ASP(Antimicrobial Stewardship Program)란?
         </div>
 
         항생제 적정사용 관리 프로그램(Antimicrobial Stewardship
-        Program, ASP)은 전문관리팀이 기관 내 항생제 처방과정을 중재, 관리
-        함으로써 부적절한 항생제 사용을 줄이고 적절한 사용을 유도하기 위한
-        체계입니다.<br>
-        -----------------------------------------------------------------<br>
-        본원은 2024년 11월부터 항생제 적정사용관리 시범사업에 참여하며
-        사업 활동 및 항생제 중재를 수행하고 있습니다.
+        Program, ASP)은<br> 전문관리팀이 기관 내 항생제 처방과정을 중재, 관리
+        함으로써 부적절한<br> 항생제 사용을 줄이고 적절한 사용을 유도하기 위한 체계입니다.<br>
+        -----------------------------------------------------------------------------------------------------------<br>
+        본원은 2024년 11월부터 항생제 적정사용관리 시범사업에 참여하여<br>
+        항생제 적정사용관리 활동 및 항생제 중재를 수행하고 있습니다.
         <table style="
             width:100%;
             border-collapse:collapse;
@@ -2303,8 +2302,7 @@ elif st.session_state.menu == "ASP 중재":
         <td style="
             padding:10px 12px;
         ">
-            ASP 시범사업 참여 및 <br>
-            ASP 전담팀 구성
+            ASP 시범사업 참여 및 ASP 전담팀 구성
         </td>
         </tr>
 
@@ -2322,8 +2320,7 @@ elif st.session_state.menu == "ASP 중재":
         <td style="
             padding:10px 12px;
         ">
-            항생제 처방 지침 교육 및<br>
-            항생제 적정사용 전직원 교육
+            항생제 처방 지침 교육 및 항생제 적정사용 전직원 교육
         </td>
         </tr>
         
@@ -2341,8 +2338,7 @@ elif st.session_state.menu == "ASP 중재":
         <td style="
             padding:10px 12px;
         ">
-            ASP 중재 활동을 위한<br>
-            전산 구축 완료
+            ASP 중재 활동을 위한 전산 구축 완료
         </td>
         </tr>
 
@@ -2378,8 +2374,7 @@ elif st.session_state.menu == "ASP 중재":
         <td style="
             padding:10px 12px;
         ">
-            항생제 처방 지침 교육<br>
-            항생제 적정사용 전직원 교육
+            항생제 처방 지침 교육 및 항생제 적정사용 전직원 교육
         </td>
         </tr>
 
@@ -2415,8 +2410,7 @@ elif st.session_state.menu == "ASP 중재":
         <td style="
             padding:10px 12px;
         ">
-            1차년도 시범사업 결과 보고<br>
-            2차년도 시범사업 참여
+            1차년도 시범사업 결과 보고 및 2차년도 시범사업 참여
         </td>
         </tr>
 
