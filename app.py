@@ -627,34 +627,63 @@ div.stButton > button[kind="primary"]:hover {
 
     background: #eef4ff !important;
 }
-/* spinner 박스 */
-div[data-testid="stSpinner"] {
 
-    background: white;
-
-    border-radius: 28px;
-
-    padding: 40px 60px;
-
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-
-    text-align: center;
-
-    width: fit-content;
-
-    margin: auto;
+/* status 영역 숨김 */
+div[data-testid="stStatus"] {
+    display:none !important;
 }
 
-/* spinner 글씨 */
-div[data-testid="stSpinner"] p {
-
-    font-size: 28px !important;
-
-    font-weight: 800 !important;
-
-    color: #102a43 !important;
+/* status container 숨김 */
+div[data-testid="stStatusWidget"] {
+    display:none !important;
 }
 
+/* cache spinner 완전 숨김 */
+.stCacheSpinner {
+    display: none !important;
+}
+
+div[data-testid="stSpinner"].stCacheSpinner {
+    display: none !important;
+}
+.class-tooltip{
+    position:relative;
+    cursor:pointer;
+    margin-left:8px;
+    color:#17406D;
+}
+
+.class-tooltip-text{
+
+    visibility:hidden;
+
+    position:absolute;
+
+    left:50%;
+    top:28px;
+
+    transform:translateX(-50%);
+
+    width:260px;
+
+    background:#17406D;
+    color:white;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    text-align:left;
+    font-size:12px;
+    font-weight:400;
+    line-height:1.6;
+
+    z-index:999;
+}
+
+.class-tooltip:hover .class-tooltip-text{
+    visibility:visible;
+}
 
 </style>
 """, unsafe_allow_html=True)
@@ -721,6 +750,13 @@ with center:
         transition:0.2s;
     }
 
+    .graph-card {
+        background:white;
+        border-radius:28px;
+        padding:20px;
+        box-shadow:0 2px 10px rgba(0,0,0,0.08);
+        margin-bottom:20px;
+    }
 
     </style>
     """, unsafe_allow_html=True)
@@ -887,14 +923,41 @@ elif st.session_state.menu == "항생제 사용량":
             engine="pyxlsb"
         )
 
-        return df, day_df
+        master_df = pd.read_excel(
+            "DOT 대시보드.xlsb",
+            sheet_name="마스터",
+            engine="pyxlsb"
+        )
 
-    # 로딩 화면
-    # 로딩 placeholder
-    # 로딩 placeholder
-    with st.spinner("⏳데이터를 조회하고 있습니다..."):
+        return df, day_df, master_df
+    # 로딩창 표시
+    loading = st.empty()
 
-        df, day_df = load_data()
+    loading.markdown("""
+    <div style="
+        background:white;
+        border-radius:28px;
+        padding:40px;
+        text-align:center;
+        box-shadow:0 6px 18px rgba(0,0,0,0.12);
+        width:80%;
+        margin:auto;
+    ">
+        <div style="
+            font-size:30px;
+            font-weight:800;
+            color:#102a43;
+        ">
+            ⏳ 데이터를 조회하고 있습니다...
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 데이터 로드
+    df, day_df, master_df = load_data()
+
+    # 로딩창 제거
+    loading.empty()
 
     day_dict = dict(
         zip(
@@ -1022,7 +1085,7 @@ elif st.session_state.menu == "항생제 사용량":
     # 총 사용량 상승/하락 표시
     if total_change >= 0:
         total_arrow = "▲"
-        total_color = "#ef4444"
+        total_color = "#f08080"
     else:
         total_arrow = "▼"
         total_color = "#10B981"
@@ -1030,7 +1093,7 @@ elif st.session_state.menu == "항생제 사용량":
     # 제한항생제 상승/하락 표시
     if restricted_change >= 0:
         restricted_arrow = "▲"
-        restricted_color = "#ef4444"
+        restricted_color = "#f08080"
     else:
         restricted_arrow = "▼"
         restricted_color = "#10B981"
@@ -1894,7 +1957,7 @@ elif st.session_state.menu == "항생제 사용량":
     # 진료과 선택
     # =========================
 
-    dept_list = sorted(df["진료과한글"].dropna().unique(),
+    dept_list1 = sorted(df["진료과한글"].dropna().unique(),
         key=lambda x: (x == "기타", x))
 
     st.markdown("""
@@ -1907,7 +1970,7 @@ elif st.session_state.menu == "항생제 사용량":
 
     selected_dept = st.selectbox(
         "진료과 선택",
-        ["전체"] + dept_list
+        ["전체"] + dept_list1
     )
 
     # 선택 진료과 필터
@@ -2017,6 +2080,58 @@ elif st.session_state.menu == "항생제 사용량":
 
         legend_title_text=""
     )
+    fig_compare.add_annotation(
+        x=1.19,
+        y=0.60,
+        xref="paper",
+        yref="paper",
+         text=(
+            "<b>3세대 Cephalosporins</b><br>"
+            "Cefpodoxime, Cefixime,<br>"
+            "Cefditoren, Cefcapene,<br>"
+            "Ceftriaxone, Cefotaxime,<br>"
+            "Ceftizoxime, Ceftazidime"
+        ),
+        showarrow=False,
+
+        # 박스 스타일
+        bgcolor="white",
+        bordercolor="#6fc7c0",
+        borderwidth=1,
+        borderpad=8,
+
+        align="left",
+
+        font=dict(
+            size=11,
+            color="#102a43"
+        )
+    )
+
+    fig_compare.add_annotation(
+        x=1.19,
+        y=0.40,
+        xref="paper",
+        yref="paper",
+         text=(
+            "<b>Cephamycin          </b><br>"
+            "Cefotetan, Flomoxef          "
+        ),
+        showarrow=False,
+
+        # 박스 스타일
+        bgcolor="white",
+        bordercolor="#f2a0a0",
+        borderwidth=1,
+        borderpad=8,
+
+        align="left",
+
+        font=dict(
+            size=11,
+            color="#102a43"
+        )
+    )
 
     fig_compare.update_traces(
         texttemplate='%{text:,.1f}',
@@ -2026,6 +2141,7 @@ elif st.session_state.menu == "항생제 사용량":
         "분기: %{x}<br>" +
         "항생제 사용량: %{y:.1f}<extra></extra>"   
     )
+    
     st.markdown("""
     <div class="chart-title-box">
          <div style="
@@ -2036,7 +2152,8 @@ elif st.session_state.menu == "항생제 사용량":
         <div class="chart-title">
             🏥 분기별 진료과 3세대 Cephalosporins 및 Cephamycin 사용량 평균
         </div>
-        
+
+
     </div>
     """, unsafe_allow_html=True)
 
@@ -2168,7 +2285,7 @@ elif st.session_state.menu == "항생제 사용량":
     # =========================
 
     # 월별 / 성분별 고유키 개수
-    monthly_top10 = (
+    monthly_top8 = (
         filtered_df
         .groupby(
             ["분기", "처방 월", "성분통합키"]
@@ -2177,16 +2294,16 @@ elif st.session_state.menu == "항생제 사용량":
         .reset_index(name="DOT")
     )
 
-    monthly_top10["DOT"] = (
-        monthly_top10["DOT"]
+    monthly_top8["DOT"] = (
+        monthly_top8["DOT"]
         /
-        monthly_top10["처방 월"].map(day_dict)
+        monthly_top8["처방 월"].map(day_dict)
         * 1000
     )
 
     # 분기별 평균
     summary4 = (
-        monthly_top10
+        monthly_top8
         .groupby(["분기", "성분통합키"])["DOT"]
         .mean()
         .reset_index()
@@ -2199,36 +2316,36 @@ elif st.session_state.menu == "항생제 사용량":
         "항생제 사용량"
     ]
 
-    # 전체 기간 기준 TOP10 계산
-    top10_drug = (
+    # 전체 기간 기준 TOP8 계산
+    top8_drug = (
         summary4
         .groupby("성분통합키")["항생제 사용량"]
         .sum()
         .reset_index()
     )
 
-    top10_drug = (
-        top10_drug
+    top8_drug = (
+        top8_drug
         .sort_values(
             "항생제 사용량",
             ascending=False
         )
-        .head(10)
+        .head(8)
     )
 
     # TOP10 리스트
-    top10_drug_list = top10_drug["성분통합키"].tolist()
+    top8_drug_list = top8_drug["성분통합키"].tolist()
 
     # TOP10만 필터
     summary4 = summary4[
-        summary4["성분통합키"].isin(top10_drug_list)
+        summary4["성분통합키"].isin(top8_drug_list)
     ]
 
     # 모든 분기 × 성분 조합 생성
     all_combinations = pd.MultiIndex.from_product(
         [
             quarter_order,
-            top10_drug_list
+            top8_drug_list
         ],
         names=["분기", "성분통합키"]
     ).to_frame(index=False)
@@ -2244,7 +2361,26 @@ elif st.session_state.menu == "항생제 사용량":
     )
 
     # 범례 순서
-    legend_order = top10_drug["성분통합키"].tolist()
+    legend_order = top8_drug["성분통합키"].tolist()
+
+    # 가장 최근 분기
+    latest_quarter = quarter_order[-1]
+
+    latest_df = (
+        summary4[summary4["분기"] == latest_quarter]
+        .sort_values("항생제 사용량", ascending=False)
+        .head(8)
+    )
+    table_text = (
+        f"<b>{latest_quarter} TOP8</b><br>"
+        "<br>"
+    )
+
+    for _, row in latest_df.iterrows():
+        table_text += (
+            f"{row['성분통합키'][:18]} "
+            f"{row['항생제 사용량']:.1f}<br>"
+        )
 
     # 꺾은선 그래프
     fig4 = px.line(
@@ -2264,7 +2400,7 @@ elif st.session_state.menu == "항생제 사용량":
 
     fig4.update_layout(
 
-        height=440,
+        height=600,
 
         xaxis_title=None,
         yaxis_title="항생제 사용량 (DOT/1,000 patient-days)",
@@ -2296,17 +2432,17 @@ elif st.session_state.menu == "항생제 사용량":
 
         legend_title_text=""
     )
+
     fig4.update_traces(
         hovertemplate=
         "<b>%{fullData.name}</b><br>" +
         "분기: %{x}<br>" +
         "항생제 사용량: %{y:.1f}<extra></extra>"   
     )
-
     st.markdown("""
     <div class="chart-title-box">
         <div class="chart-title">
-            📈 분기별 진료과 다빈도 항생제 사용량 평균 TOP10
+            📈 분기별 진료과 다빈도 항생제 사용량 평균
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -2317,6 +2453,788 @@ elif st.session_state.menu == "항생제 사용량":
         config={"displayModeBar": False},
         key="graph4"
     )
+
+    dept_list2 = sorted([
+        x for x in df["성분통합키"].dropna().unique()
+        if str(x) != "0x2a" and str(x) != "Cefoperazone/sulbactam"
+    ])
+    
+    st.markdown("""
+    <div class="section-title-box">
+        <div class="section-title-text">
+            성분별 월별 항생제 사용량
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    latest_month = df["처방 월"].max()
+
+    latest_df = df[df["처방 월"] == latest_month]
+
+    drug_usage = (
+        latest_df
+        .groupby("성분통합키")["고유키"]
+        .nunique()
+        .reset_index(name="DOT")
+    )
+
+    drug_usage["DOT"] = (
+        drug_usage["DOT"]
+        / day_dict[latest_month]
+        * 1000
+    )
+    drug_usage = drug_usage[
+        drug_usage["성분통합키"] != "0x2a"
+    ]
+
+
+    drug_usage = drug_usage.sort_values(
+        "DOT",
+        ascending=False
+    )
+
+    dept_list2 = drug_usage["성분통합키"].tolist()
+
+    display_map = {
+        row["성분통합키"]:
+        f"{row['성분통합키']} ▶ [{row['DOT']:.1f}]"
+        for _, row in drug_usage.iterrows()
+    }
+
+    selected_drug = st.selectbox(
+        "성분 선택",
+        ["전체"] + drug_usage["성분통합키"].tolist(),
+        format_func=lambda x:
+            "전체" if x == "전체"
+            else display_map.get(x, x)
+    )
+
+    # 선택 성분 필터
+    if selected_drug != "전체":
+
+        filtered_df = df[
+            df["성분통합키"] == selected_drug
+        ]
+
+        pie_source_df = filtered_df.copy()
+
+    else:
+
+        filtered_df = df.copy()
+
+        pie_source_df = df.copy()
+
+    # 선택 성분 KPI
+    selected_latest = (
+        filtered_df[
+            filtered_df["처방 월"] == latest_month
+        ]["고유키"]
+        .nunique()
+        / day_dict[latest_month]
+        * 1000
+    )
+
+    selected_latest = round(selected_latest, 1)
+
+    selected_prev = (
+        filtered_df[
+            filtered_df["처방 월"] == prev_month
+        ]["고유키"]
+        .nunique()
+        / day_dict[prev_month]
+        * 1000
+    )
+
+    selected_prev = round(selected_prev, 1)
+
+    if selected_prev > 0:
+
+        selected_change = (
+            (selected_latest - selected_prev)
+            / selected_prev
+        ) * 100
+
+    else:
+
+        selected_change = 0
+
+    if selected_change >= 0:
+        selected_arrow = "▲"
+        selected_color = "#f08080"
+    else:
+        selected_arrow = "▼"
+        selected_color = "#10B981"
+
+
+    selected_change_text = f"{selected_arrow} {abs(selected_change):.1f}%"
+
+    # KPI 카드
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown(f"""
+        <div style="
+            background:white;
+            border-radius:28px;
+            padding:28px 36px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom:20px;
+        ">
+
+        <!-- 타이틀 -->
+        <div style="
+            font-size:20px;
+            font-weight:800;
+            color:#102a43;
+            margin-bottom:22px;
+        ">
+            이달의 {selected_drug} 사용량
+            <span style="
+                font-size:13px;
+                font-weight:500;
+                color:#6b7280;
+                margin-left:6px;
+            ">
+                ({latest_month_text} 기준)
+            </span>
+        </div>
+
+        <!-- 본문 -->
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        ">
+
+        <!-- 왼쪽 숫자 + 단위 -->
+        <div>
+
+        <div style="
+            font-size:58px;
+            font-weight:800;
+            color:#17406D;
+            line-height:1.0;
+            margin-bottom:8px;
+        ">
+            {selected_latest:,.1f}
+        </div>
+
+        <div style="
+            font-size:18px;
+            font-weight:400;
+            color:#6b7280;
+        ">
+            DOT/1,000 patient-days
+        </div>
+
+        </div>
+
+        <!-- 오른쪽 변화율 -->
+        <div style="
+            text-align:center;
+            padding-left:30px;
+            border-left:1px solid #d1d5db;
+        ">
+
+        <div style="
+            font-size:18px;
+            font-weight:700;
+            color:#374151;
+            margin-bottom:8px;
+        ">
+            지난 달 대비
+        </div>
+
+        <div style="
+            font-size:36px;
+            font-weight:800;
+            color:{selected_color};
+        ">
+            {selected_change_text}
+        </div>
+
+        </div>
+
+        </div>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+                            # 선택 성분의 항목코드 목록
+        if selected_drug == "전체":
+
+            drug_info = pd.DataFrame(
+                columns=["항목코드", "약품명"]
+            )
+        
+        else:
+
+            drug_info = (
+                master_df[
+                    master_df["성분통합키"] == selected_drug
+                ][["항목코드", "약품명"]]
+                .drop_duplicates()
+            )
+
+            drug_info = drug_info[
+                drug_info["약품명"].notna()
+            ]
+
+            drug_info = drug_info[
+                drug_info["약품명"].astype(str).str.strip() != ""
+            ]
+
+            drug_info = drug_info.sort_values(
+                "항목코드"
+            )
+
+        drug_info.columns = [
+            "약품 코드",
+            "약품명"
+        ]
+
+        drug_info = drug_info[
+            drug_info["약품명"].notna()
+        ]
+
+        drug_info = drug_info[
+            drug_info["약품명"].astype(str).str.strip() != ""
+        ]
+
+        drug_info = drug_info.sort_values(
+            "약품 코드"
+        )
+
+        with st.container():
+
+            st.markdown("""
+            <div style="
+                background:white;
+                border-radius:10px 10px 0 0;
+                padding:20px 24px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.08);
+                font-size:20px;
+                font-weight:800;
+                color:#102a43;
+                text-align:center;
+            ">
+                🏥 본원 해당 성분
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.dataframe(
+                drug_info,
+                use_container_width=True,
+                hide_index=True
+            )   
+
+
+    # =========================
+# 성분 분류
+# =========================
+
+        if selected_drug == "전체":
+
+            selected_class = "-"
+
+        else:
+            class_info = (
+                master_df[
+                    master_df["성분통합키"] == selected_drug
+                ]["분류"]
+                .dropna()
+                .astype(str)
+                .str.strip()
+                .unique()
+            )
+
+            selected_class = (
+                ", ".join(class_info)
+                if len(class_info) > 0
+                else "-"
+            )
+            
+            if selected_class == "기타":
+                selected_class = "-"
+
+        if selected_class != "-":
+
+            st.markdown(f"""
+            <div style="
+                background:white;
+                border-radius:10px;
+                padding:20px 24px;
+                margin-top:20px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.08);
+            ">
+
+            <div style="
+                font-size:20px;
+                font-weight:800;
+                color:#102a43;
+                text-align:center;
+                margin-bottom:15px;
+            ">
+                🧬 성분 분류
+            </div>
+
+            <div style="
+                text-align:center;
+                font-size:18px;
+                font-weight:600;
+                color:#374151;
+            ">
+                {selected_class} 
+            
+            </div>
+
+            </div>
+            """, unsafe_allow_html=True)
+
+# =========================
+# 분류별 사용량 추이
+# =========================
+
+        if (
+            selected_drug != "전체"
+            and selected_class != "-"
+        ):
+
+            class_df = df[
+                (df["분류"] == selected_class)
+                &
+                (df["처방 월"].isin([
+                    "26/01",
+                    "26/02",
+                    "26/03",
+                    "26/04",
+                    "26/05"
+                ]))
+            ].copy()
+
+            class_trend = (
+                class_df
+                .groupby("처방 월")["고유키"]
+                .nunique()
+                .reset_index(name="DOT")
+            )
+
+            class_trend["DOT"] = (
+                class_trend["DOT"]
+                /
+                class_trend["처방 월"].map(day_dict)
+                * 1000
+            )
+
+            month_order_2026 = [
+                "26/01",
+                "26/02",
+                "26/03",
+                "26/04",
+                "26/05"
+            ]
+
+            class_trend["처방 월"] = pd.Categorical(
+                class_trend["처방 월"],
+                categories=month_order_2026,
+                ordered=True
+            )
+
+            class_trend = class_trend.sort_values(
+                "처방 월"
+            )
+
+            class_trend["월표시"] = (
+                class_trend["처방 월"]
+                .astype(str)
+                .map({
+                    "26/01": "26년 1월",
+                    "26/02": "26년 2월",
+                    "26/03": "26년 3월",
+                    "26/04": "26년 4월",
+                    "26/05": "26년 5월"
+                })
+            )
+
+            fig_class = px.bar(
+                class_trend,
+                x="월표시",
+                y="DOT",
+                text="DOT"
+            )
+
+            fig_class.update_traces(
+                texttemplate="%{y:.1f}",
+                textposition="outside",
+                marker_color="#82D4BB",
+                width=0.45,
+                hovertemplate=
+                "<b>" + selected_class + "</b><br>" +
+                "처방월: %{x}<br>" +
+                "항생제 사용량: %{y:.1f}<br>" +
+                "<extra></extra>"
+            )
+
+             # x축을 숫자로 변환
+            x_num = np.arange(len(class_trend))
+
+            # 선형회귀
+            coef = np.polyfit(
+                x_num,
+                class_trend["DOT"],
+                1
+            )
+
+            trend = np.poly1d(coef)
+
+            # 추세선 추가
+            fig_class.add_trace(
+                go.Scatter(
+                    x=class_trend["월표시"],
+                    y=trend(x_num),
+                    mode="lines",
+                    name="Trend",
+                    showlegend=False,
+                    line=dict(
+                        color="#17406D",
+                        width=2,
+                        dash="dot"
+                    ),
+                    hovertemplate=
+                    "<b>추세선</b><br>" +
+                    "DOT: %{y:.1f}<extra></extra>"
+                )
+            )
+
+            y_max = class_trend["DOT"].max() * 1.25
+
+            fig_class.update_layout(
+                height=400,
+
+                margin=dict(
+                    l=60,
+                    r=20,
+                    t=20,
+                    b=10
+                ),
+
+                xaxis_title=None,
+                yaxis_title="항생제 사용량 (DOT/1,000 patient-days)",
+                yaxis=dict(
+                    range=[0, y_max]
+                ),
+                paper_bgcolor="rgba(255,255,255,0)",
+                plot_bgcolor="rgba(255,255,255,0)"
+            )
+
+            st.markdown(f"""
+            <div style="margin-top:30px;">
+            <div class="chart-title-box">
+                <div class="chart-title">
+                    📊{selected_class}계열 항생제 사용량 추이
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.plotly_chart(
+                fig_class,
+                use_container_width=True,
+                config={"displayModeBar": False}
+            )
+
+            
+
+    with col2:
+                  # =========================
+    # 최근월 진료과별 사용량
+    # =========================
+
+        pie_df = pie_source_df[
+            pie_source_df["처방 월"] == latest_month
+        ].copy()
+
+        pie_df = (
+            pie_df
+            .groupby("진료과한글")["고유키"]
+            .nunique()
+            .reset_index(name="DOT")
+        )
+
+        pie_df["DOT"] = (
+            pie_df["DOT"]
+            / day_dict[latest_month]
+            * 1000
+        )
+
+        total_dot = pie_df["DOT"].sum()
+
+        pie_df["비율"] = (
+            pie_df["DOT"]
+            / total_dot
+            * 100
+        )
+
+        pie_df = pie_df.sort_values(
+            "비율",
+            ascending=False
+        )
+
+        # 5% 미만 → 기타
+
+        pie_original = pie_df.copy()
+
+        small_dept = pie_df[
+            pie_df["비율"] < 5
+        ]
+
+        major_dept = pie_df[
+            pie_df["비율"] >= 5
+        ]
+
+        major_dept = major_dept.sort_values(
+            "비율",
+            ascending=False
+        )
+
+        if len(small_dept) > 0:
+
+            etc_row = pd.DataFrame({
+                "진료과한글": ["기타(5% 미만)"],
+                "DOT": [small_dept["DOT"].sum()],
+                "비율": [small_dept["비율"].sum()]
+            })
+
+            pie_df = pd.concat(
+                [major_dept, etc_row],
+                ignore_index=True
+            )
+
+        else:
+
+            pie_df = major_dept.copy()
+
+        # TOP3 진료과
+        top3_dept = (
+            pie_original
+            .sort_values("DOT", ascending=False)
+            .head(3)
+        )
+
+        top3_list = top3_dept["진료과한글"].tolist()
+
+        # =========================
+        # 도넛차트
+        # =========================
+
+        color_map = {
+            "기타(5% 미만)": "#E5E7EB"
+        }
+        pie_df["label"] = (     
+            pie_df["비율"].round(1).astype(str)
+            + "%"
+        )
+        fig_donut = px.pie(
+            pie_df,
+            names="진료과한글",
+            values="DOT",
+            hole=0.45,
+            color="진료과한글",
+            color_discrete_map=color_map,
+            color_discrete_sequence=[
+                "#7FB3FF",
+                "#82D4BB",
+                "#F6C667",
+                "#F3A6AE",
+                "#B8B5FF",
+                "#9AD0F5",
+                "#FFD6A5",
+                "#CDEAC0",
+                "#FFCAD4"
+            ]
+        )
+
+        fig_donut.update_traces(
+            text=pie_df["label"],
+            textinfo="text",
+            textposition="inside",
+
+            insidetextorientation="horizontal",
+
+            textfont=dict(
+                size=16
+            ),
+
+            sort=False,
+            direction="clockwise",
+            rotation=0,
+            hovertemplate=
+            "<b>%{label}</b><br>" +
+            "항생제 사용량: %{value:.1f}<br>" +
+            "비율: %{percent}<extra></extra>"
+        )
+
+        fig_donut.update_layout(
+            height=450,
+            margin=dict(l=20, r=20, t=20, b=20),
+        )
+
+        st.markdown(f"""
+            <div class="chart-title-box">
+                <div class="chart-title">
+                    {selected_drug} 진료과별 사용 비율
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.plotly_chart(
+            fig_donut,
+            use_container_width=True,
+            config={"displayModeBar": False}
+        )
+        
+
+        # =========================
+        # TOP3 월별 추이
+        # =========================
+
+        trend_df = df[
+            df["성분통합키"] == selected_drug
+        ].copy()
+
+        month_order_2026 = [
+            "26/01",
+            "26/02",
+            "26/03",
+            "26/04",
+            "26/05"
+        ]
+
+        trend_df = trend_df[
+            trend_df["처방 월"].isin(month_order_2026)
+        ]
+
+
+        trend_df = (
+            trend_df
+            .groupby(
+                ["처방 월", "진료과한글"]
+            )["고유키"]
+            .nunique()
+            .reset_index(name="DOT")
+        )
+
+        trend_df["DOT"] = (
+            trend_df["DOT"]
+            /
+            trend_df["처방 월"].map(day_dict)
+            * 1000
+        )
+
+        month_label_map = {
+            "26/01": "26년 1월",
+            "26/02": "26년 2월",
+            "26/03": "26년 3월",
+            "26/04": "26년 4월",
+            "26/05": "26년 5월"
+        }
+
+        trend_df["월표시"] = trend_df["처방 월"].map(month_label_map)
+
+        trend_df = trend_df[
+            trend_df["진료과한글"].isin(top3_list)
+        ]
+
+        trend_df["진료과한글"] = pd.Categorical(
+            trend_df["진료과한글"],
+            categories=top3_list,
+            ordered=True
+        )
+
+        trend_df["처방 월"] = pd.Categorical(
+            trend_df["처방 월"],
+            categories=month_order_2026,
+            ordered=True
+        )
+
+        trend_df = trend_df.sort_values("처방 월")
+
+        color_map = {
+            top3_list[0]: "#82D4BB",  # 1위
+            top3_list[1]: "#F6C667",  # 2위
+            top3_list[2]: "#f3a6ae"   # 3위
+        }
+
+        latest_label_month = month_order_2026[-1]
+
+        trend_df["label"] = trend_df.apply(
+            lambda row:
+                f"{row['DOT']:.1f}"
+                if row["처방 월"] == latest_label_month
+                else "",
+            axis=1
+        )
+
+        fig_top3 = px.line(
+            trend_df.sort_values("진료과한글"),
+            x="월표시",
+            y="DOT",
+            color="진료과한글",
+            markers=True,
+            text="label",
+            color_discrete_map=color_map,
+            category_orders={
+                "월표시": [
+                    "26년 1월",
+                    "26년 2월",
+                    "26년 3월",
+                    "26년 4월",
+                    "26년 5월"
+                ]
+            }
+        )
+
+        fig_top3.update_traces(
+            textposition="top center",
+            hovertemplate=
+            "<b>%{fullData.name}</b><br>" +
+            "처방월: %{x}<br>" +
+            "항생제 사용량: %{y:.1f}<br>" +
+            "<extra></extra>"
+        )
+
+        fig_top3.update_layout(
+            height=350,
+            xaxis_title=None,
+            yaxis_title="항생제 사용량 (DOT/1,000 patient-days)",
+            legend_title_text="",
+            legend=dict(
+                orientation="h",
+                x=0.45,
+                xanchor="center",
+                y=-0.15),
+            margin=dict(
+                l=60,   # 기본보다 증가
+                r=20,
+                t=60,
+                b=20
+            )
+        )
+
+        st.markdown(f"""
+            <div class="chart-title-box">
+                <div class="chart-title">
+                    {selected_drug} 다빈도 진료과 추이
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.plotly_chart(
+            fig_top3,
+            use_container_width=True,
+            config={"displayModeBar": False}
+        )
+
+
 
     # =========================
     # 하단 우측 최신화 버튼
@@ -2342,10 +3260,31 @@ elif st.session_state.menu == "ASP 중재":
             sheet_name="중재",
             engine="pyxlsb"
         )  
+    loading = st.empty()
 
-    with st.spinner("⏳데이터를 조회하고 있습니다..."):
+    loading.markdown("""
+    <div style="
+        background:white;
+        border-radius:28px;
+        padding:40px;
+        text-align:center;
+        box-shadow:0 6px 18px rgba(0,0,0,0.12);
+        width:80%;
+        margin:auto;
+    ">
+        <div style="
+            font-size:30px;
+            font-weight:800;
+            color:#102a43;
+        ">
+            ⏳ 데이터를 조회하고 있습니다...
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        df_inter_data = load_inter_data()
+    df_inter_data = load_inter_data()
+
+    loading.empty()
 
     st.markdown("""
     <div class="section-title-box">
@@ -2395,7 +3334,7 @@ elif st.session_state.menu == "ASP 중재":
     if intervention_change >= 0:
 
         intervention_arrow = "▲"
-        intervention_color = "#ef4444"
+        intervention_color = "#f08080"
 
     else:
 
@@ -2427,7 +3366,7 @@ elif st.session_state.menu == "ASP 중재":
     if accept_change >= 0:
 
         accept_arrow = "▲"
-        accept_color = "#ef4444"
+        accept_color = "#f08080"
 
     else:
 
