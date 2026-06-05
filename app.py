@@ -303,6 +303,41 @@ div[data-testid="stPlotlyChart"] {
     margin: 0;
 }
 
+/* 컬럼 제목 박스 */
+.column-title-box {
+
+    background-color: #214d99;
+
+    padding: 14px 24px;
+
+    border-radius: 18px;
+
+    width: fit-content;
+
+    margin-left: 0px;
+
+    margin-bottom: 15px;
+
+    pointer-events: none;
+
+    box-shadow: 0 3px 8px rgba(0,0,0,0.10);
+
+    border: 1px solid #c8d6e8;
+}
+
+/* 그래프 제목 글씨 */
+.column-title {
+
+    font-size: 18px;
+
+    font-weight: 600;
+
+    color: white;
+
+    margin: 0;
+}
+
+
 html, body {
     overflow-x: hidden;
 }
@@ -425,11 +460,11 @@ div[data-baseweb="select"] {
 
     overflow: hidden;
 
-    border: 1px solid #d1d5db;
+    border: 2px solid #17406D;
 
     background: #e5e7eb;
 
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
+    box-shadow: 0 3px 8px rgba(23,64,109,0.15);
 }
 
 /* 내부 wrapper */
@@ -483,9 +518,9 @@ div[data-baseweb="select"] > div:focus-within {
 
     outline: none !important;
 
-    box-shadow: none !important;
+    box-shadow: 0 3px 8px rgba(23,64,109,0.15);
 
-    border-color: #bcc8d6 !important;
+    border-color: #17406D !important;
 }
 
 /* 내부 input focus 제거 */
@@ -2555,7 +2590,7 @@ elif st.session_state.menu == "항생제 사용량":
     }
 
     selected_drug = st.selectbox(
-        "성분 선택",
+        "항생제 성분 선택",
         ["전체"] + drug_usage["성분통합키"].tolist(),
         format_func=lambda x:
             "전체" if x == "전체"
@@ -2784,7 +2819,7 @@ elif st.session_state.menu == "항생제 사용량":
 
     # =========================
 # 성분 분류
-# =========================
+# ========================
 
         if selected_drug == "전체":
 
@@ -2810,6 +2845,28 @@ elif st.session_state.menu == "항생제 사용량":
             if selected_class == "기타":
                 selected_class = "-"
 
+        tooltip_items = (
+            master_df[
+                master_df["분류"] == selected_class
+            ]["성분통합키"]
+            .dropna()
+            .astype(str)
+            .str.strip()
+            .unique()
+        )
+
+        tooltip_items = [
+            x for x in tooltip_items.unique()
+            if x not in [
+                "Cefoperazone/sulbactam",
+                "Cefuroxime"
+            ]
+        ]
+
+        tooltip_text = "".join(
+            [f"<div>• {item}</div>" for item in sorted(tooltip_items)]
+        )
+
         if selected_class != "-":
 
             st.markdown(f"""
@@ -2817,7 +2874,7 @@ elif st.session_state.menu == "항생제 사용량":
                 background:white;
                 border-radius:10px;
                 padding:20px 24px;
-                margin-top:20px;
+                margin-top:10px;
                 box-shadow:0 2px 10px rgba(0,0,0,0.08);
             ">
 
@@ -2837,11 +2894,80 @@ elif st.session_state.menu == "항생제 사용량":
                 font-weight:600;
                 color:#374151;
             ">
-                {selected_class} 
-            
+                {selected_class}
+
+            <style>
+            .tooltip-container:hover .tooltip-box {{
+                visibility:visible !important;
+                opacity:1 !important;
+            }}
+            </style>
+
+            <div class="tooltip-container" style="
+                position:relative;
+                display:inline-block;
+                cursor:pointer;
+                margin-left:12px;
+            ">
+
+            <!-- 동그란 i -->
+            <div style="
+                width:24px;
+                height:24px;
+                border-radius:50%;
+                background:#e8eef7;
+                color:#17406D;
+                font-size:16px;
+                font-weight:700;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+            ">
+                i
+            </div>
+
+            <!-- 툴팁 -->
+            <div class="tooltip-box" style="
+                visibility:hidden;
+                opacity:0;
+                transition:0.2s;
+                position:absolute;
+                top:35px;
+                left:0;
+                width:200px;
+                background:#214d99;
+                color:white;
+                padding:18px 20px;
+                border-radius:16px;
+                box-shadow:0 8px 24px rgba(0,0,0,0.18);
+                z-index:999;
+                font-size:15px;
+                line-height:1.7;
+            ">
+
+            <div style="
+                font-size:14px;
+                font-weight:500;
+                text-align:left;
+            ">
+                {tooltip_text}
             </div>
 
             </div>
+
+            </div>
+
+            </div>
+
+            </div>
+
+            <style>
+            .tooltip-container:hover .tooltip-box {{
+                visibility:visible !important;
+                opacity:1 !important;
+            }}
+
+            </style>
             """, unsafe_allow_html=True)
 
 # =========================
@@ -2981,10 +3107,10 @@ elif st.session_state.menu == "항생제 사용량":
             )
 
             st.markdown(f"""
-            <div style="margin-top:30px;">
-            <div class="chart-title-box">
-                <div class="chart-title">
-                    📊{selected_class}계열 항생제 사용량 추이
+            <div style="margin-top:15px;">
+            <div class="column-title-box">
+                <div class="column-title">
+                    📊{selected_class} 계열 항생제 사용량 추이
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -3132,9 +3258,9 @@ elif st.session_state.menu == "항생제 사용량":
         )
 
         st.markdown(f"""
-            <div class="chart-title-box">
-                <div class="chart-title">
-                    {selected_drug} 진료과별 사용 비율
+            <div class="column-title-box">
+                <div class="column-title">
+                    이 달의 {selected_drug} 진료과별 사용 비율
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -3210,11 +3336,14 @@ elif st.session_state.menu == "항생제 사용량":
         )
 
         trend_df = trend_df.sort_values("처방 월")
-
+        top3_colors = [
+            "#82D4BB",
+            "#F6C667",
+            "#f3a6ae"
+        ]
         color_map = {
-            top3_list[0]: "#82D4BB",  # 1위
-            top3_list[1]: "#F6C667",  # 2위
-            top3_list[2]: "#f3a6ae"   # 3위
+            dept: top3_colors[i]
+            for i, dept in enumerate(top3_list)
         }
 
         latest_label_month = month_order_2026[-1]
@@ -3274,9 +3403,9 @@ elif st.session_state.menu == "항생제 사용량":
         )
 
         st.markdown(f"""
-            <div class="chart-title-box">
-                <div class="chart-title">
-                    {selected_drug} 다빈도 진료과 추이
+            <div class="column-title-box">
+                <div class="column-title">
+                    2026년 {selected_drug} 다빈도 사용 진료과 현황
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -3994,7 +4123,7 @@ elif st.session_state.menu == "ASP 중재":
     # 선택창
     selected_month = st.selectbox(
 
-        "월 선택",
+        "월별 현황",
 
         month_list,
 
