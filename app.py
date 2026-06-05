@@ -4450,7 +4450,7 @@ elif st.session_state.menu == "ASP 전담팀":
     # 좌우 컬럼
     # =========================
 
-    left_col, right_col = st.columns([1.05, 1])
+    left_col, right_col = st.columns([1, 1])
 
     # =========================
     # 왼쪽 컬럼 (사진)
