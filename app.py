@@ -198,6 +198,9 @@ if not st.session_state.authenticated:
 
     st.stop()
 
+if "data_preloaded" not in st.session_state:
+    st.session_state.data_preloaded = False
+
 st.markdown("""
 <style>
 
@@ -405,7 +408,7 @@ div[data-testid="stToolbar"] {
     font-size: 30px;
     font-weight: 800;
 
-    color: #102a43;
+    color: #003bd6;
 
     margin-top: 20px;
 }
@@ -414,7 +417,7 @@ div[data-testid="stToolbar"] {
 
     font-size: 16px;
 
-    color: #6b7280;
+    color: #003bd6;
 
     margin-top: 12px;
 }
@@ -688,6 +691,62 @@ div[data-testid="stSpinner"].stCacheSpinner {
 </style>
 """, unsafe_allow_html=True)
 
+@st.cache_data(ttl=86400)
+def load_data():
+
+    df = pd.read_excel(
+        "DOT 대시보드.xlsb",
+        sheet_name="ASP",
+        engine="pyxlsb"
+    )
+
+    day_df = pd.read_excel(
+        "DOT 대시보드.xlsb",
+        sheet_name="재원일수",
+        engine="pyxlsb"
+    )
+
+    master_df = pd.read_excel(
+        "DOT 대시보드.xlsb",
+        sheet_name="마스터",
+        engine="pyxlsb"
+    )
+
+    return df, day_df, master_df
+
+if (
+    st.session_state.authenticated
+    and
+    not st.session_state.data_preloaded
+):
+    with open("rotation1.gif", "rb") as f:
+        gif_base64 = base64.b64encode(f.read()).decode()
+
+    loading = st.empty()
+
+    with loading.container():
+
+        st.markdown(
+            f"""
+            <div style="text-align:center;">
+                <img src="data:image/gif;base64,{gif_base64}" width="250">
+                <h2 style="
+                    color:#17406D;
+                    font-weight:800;
+                ">
+                데이터를 조회하고 있습니다...
+                </h2>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    df, day_df, master_df = load_data()
+
+    st.session_state.data_preloaded = True
+
+    st.rerun()
+
 import base64
 
 with open("logo1.png", "rb") as image_file:
@@ -907,57 +966,7 @@ if st.session_state.menu == "안내사항":
 
 elif st.session_state.menu == "항생제 사용량":
 
-    # 엑셀 읽기
-    @st.cache_data(ttl=86400)
-    def load_data():
-
-        df = pd.read_excel(
-            "DOT 대시보드.xlsb",
-            sheet_name="ASP",
-            engine="pyxlsb"
-        )
-
-        day_df = pd.read_excel(
-            "DOT 대시보드.xlsb",
-            sheet_name="재원일수",
-            engine="pyxlsb"
-        )
-
-        master_df = pd.read_excel(
-            "DOT 대시보드.xlsb",
-            sheet_name="마스터",
-            engine="pyxlsb"
-        )
-
-        return df, day_df, master_df
-    # 로딩창 표시
-    loading = st.empty()
-
-    loading.markdown("""
-    <div style="
-        background:white;
-        border-radius:28px;
-        padding:40px;
-        text-align:center;
-        box-shadow:0 6px 18px rgba(0,0,0,0.12);
-        width:80%;
-        margin:auto;
-    ">
-        <div style="
-            font-size:30px;
-            font-weight:800;
-            color:#102a43;
-        ">
-            ⏳ 데이터를 조회하고 있습니다...
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # 데이터 로드
     df, day_df, master_df = load_data()
-
-    # 로딩창 제거
-    loading.empty()
 
     day_dict = dict(
         zip(
@@ -3251,7 +3260,7 @@ elif st.session_state.menu == "항생제 사용량":
             st.toast("페이지를 새로고침했습니다.")
 
 elif st.session_state.menu == "ASP 중재":
-    
+
     @st.cache_data(ttl=86400)
     def load_inter_data():
 
@@ -3259,32 +3268,10 @@ elif st.session_state.menu == "ASP 중재":
             "DOT 대시보드.xlsb",
             sheet_name="중재",
             engine="pyxlsb"
-        )  
-    loading = st.empty()
-
-    loading.markdown("""
-    <div style="
-        background:white;
-        border-radius:28px;
-        padding:40px;
-        text-align:center;
-        box-shadow:0 6px 18px rgba(0,0,0,0.12);
-        width:80%;
-        margin:auto;
-    ">
-        <div style="
-            font-size:30px;
-            font-weight:800;
-            color:#102a43;
-        ">
-            ⏳ 데이터를 조회하고 있습니다...
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
+        ) 
+    
     df_inter_data = load_inter_data()
 
-    loading.empty()
 
     st.markdown("""
     <div class="section-title-box">
