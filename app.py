@@ -198,9 +198,6 @@ if not st.session_state.authenticated:
 
     st.stop()
 
-if "data_preloaded" not in st.session_state:
-    st.session_state.data_preloaded = False
-
 st.markdown("""
 <style>
 
@@ -688,64 +685,23 @@ div[data-testid="stSpinner"].stCacheSpinner {
     visibility:visible;
 }
 
+.loading-overlay {
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:white;
+    z-index:99999;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+
 </style>
 """, unsafe_allow_html=True)
-
-@st.cache_data(ttl=86400)
-def load_data():
-
-    df = pd.read_excel(
-        "DOT 대시보드.xlsb",
-        sheet_name="ASP",
-        engine="pyxlsb"
-    )
-
-    day_df = pd.read_excel(
-        "DOT 대시보드.xlsb",
-        sheet_name="재원일수",
-        engine="pyxlsb"
-    )
-
-    master_df = pd.read_excel(
-        "DOT 대시보드.xlsb",
-        sheet_name="마스터",
-        engine="pyxlsb"
-    )
-
-    return df, day_df, master_df
-
-if (
-    st.session_state.authenticated
-    and
-    not st.session_state.data_preloaded
-):
-    with open("rotation1.gif", "rb") as f:
-        gif_base64 = base64.b64encode(f.read()).decode()
-
-    loading = st.empty()
-
-    with loading.container():
-
-        st.markdown(
-            f"""
-            <div style="text-align:center;">
-                <img src="data:image/gif;base64,{gif_base64}" width="250">
-                <h2 style="
-                    color:#17406D;
-                    font-weight:800;
-                ">
-                데이터를 조회하고 있습니다...
-                </h2>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    df, day_df, master_df = load_data()
-
-    st.session_state.data_preloaded = True
-
-    st.rerun()
 
 import base64
 
@@ -785,6 +741,9 @@ st.markdown(title_html, unsafe_allow_html=True)
 if "menu" not in st.session_state:
     st.session_state.menu = "안내사항"
 
+if "abx_loaded" not in st.session_state:
+    st.session_state.abx_loaded = False
+
 sp1, center, sp2 = st.columns([1, 3, 1])
 
 with center:
@@ -815,6 +774,21 @@ with center:
         padding:20px;
         box-shadow:0 2px 10px rgba(0,0,0,0.08);
         margin-bottom:20px;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.4s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity:0;
+            transform:translateY(5px);
+        }
+        to {
+            opacity:1;
+            transform:translateY(0);
+        }
     }
 
     </style>
@@ -966,14 +940,111 @@ if st.session_state.menu == "안내사항":
 
 elif st.session_state.menu == "항생제 사용량":
 
-    df, day_df, master_df = load_data()
+    @st.cache_data(ttl=86400)
+    def load_data():
 
-    day_dict = dict(
-        zip(
-            day_df["처방 월"],
-            day_df["재원일수"]
+        df = pd.read_excel(
+            "DOT 대시보드.xlsb",
+            sheet_name="ASP",
+            engine="pyxlsb"
         )
-    )
+
+        day_df = pd.read_excel(
+            "DOT 대시보드.xlsb",
+            sheet_name="재원일수",
+            engine="pyxlsb"
+        )
+
+        master_df = pd.read_excel(
+            "DOT 대시보드.xlsb",
+            sheet_name="마스터",
+            engine="pyxlsb"
+        )
+
+        return df, day_df, master_df
+
+    @st.cache_data(ttl=86400)
+    def create_summary1(df, day_df):
+
+        day_dict = dict(
+            zip(
+                day_df["처방 월"],
+                day_df["재원일수"]
+            )
+        )
+
+        monthly_total = (
+            df
+            .groupby(["분기", "처방 월"])["고유키"]
+            .nunique()
+            .reset_index(name="DOT")
+        )
+
+        monthly_total["DOT"] = (
+            monthly_total["DOT"]
+            /
+            monthly_total["처방 월"].map(day_dict)
+            * 1000
+        )
+
+        summary1 = (
+            monthly_total
+            .groupby("분기")["DOT"]
+            .mean()
+            .reset_index()
+        )
+
+        return summary1
+
+    @st.cache_data
+    def load_images():
+
+        with open("pill.png", "rb") as f:
+            pill = base64.b64encode(f.read()).decode()
+
+        with open("icon1.png", "rb") as f:
+            icon1 = base64.b64encode(f.read()).decode()
+
+        with open("icon2.png", "rb") as f:
+            icon2 = base64.b64encode(f.read()).decode()
+
+        return pill, icon1, icon2
+
+    pill_base64, icon1_base64, icon2_base64 = load_images()
+
+    if not st.session_state.abx_loaded:
+
+        with open("rotation1.gif", "rb") as f:
+            gif_base64 = base64.b64encode(f.read()).decode()
+
+        loading = st.empty()
+
+        with loading.container():
+
+            st.markdown(
+                f"""
+                <div style="text-align:center;">
+                    <img src="data:image/gif;base64,{gif_base64}" width="250">
+                    <h2 style="
+                        color:#0339dd;
+                        font-weight:800;
+                    ">
+                        데이터를 조회하고 있습니다...
+                    </h2>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        df, day_df, master_df = load_data()
+
+        loading.empty()
+
+        st.session_state.abx_loaded = True
+
+    else:
+
+        df, day_df, master_df = load_data()
 
     st.markdown("""
     <div class="section-title-box">
@@ -982,6 +1053,14 @@ elif st.session_state.menu == "항생제 사용량":
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    day_dict = dict(
+        zip(
+            day_df["처방 월"],
+            day_df["재원일수"]
+        )
+    )
+
 
     # 분기 변환 함수
     def convert_quarter(month):
@@ -1507,20 +1586,6 @@ elif st.session_state.menu == "항생제 사용량":
         </div>
         """, unsafe_allow_html=True)
 
-    with open("pill.png", "rb") as image_file:
-        pill_base64 = base64.b64encode(
-            image_file.read()
-        ).decode()
-
-    with open("icon1.png", "rb") as image_file:
-        icon1_base64 = base64.b64encode(
-            image_file.read()
-        ).decode()
-
-    with open("icon2.png", "rb") as image_file:
-        icon2_base64 = base64.b64encode(
-            image_file.read()
-        ).decode()
 
     st.markdown(f"""
     <div style="
@@ -1645,28 +1710,7 @@ elif st.session_state.menu == "항생제 사용량":
     # =========================
 
     # 월별 고유키 개수 계산
-    monthly_total = (
-        df
-        .groupby(["분기", "처방 월"])["고유키"]
-        .nunique()
-        .reset_index(name="DOT")
-    )
-
-    monthly_total["DOT"] = (
-        monthly_total["DOT"]
-        /
-        monthly_total["처방 월"].map(day_dict)
-        * 1000
-    )
-
-    # 분기별 평균 계산
-    summary1 = (
-        monthly_total
-        .groupby("분기")["DOT"]
-        .mean()
-        .reset_index()
-    )
-
+    summary1 = create_summary1(df, day_df)
     # 컬럼명 변경
     summary1.columns = [
         "분기",
@@ -3256,6 +3300,7 @@ elif st.session_state.menu == "항생제 사용량":
         if st.button("🔄Refresh"):
 
             load_data.clear()
+            st.session_state.abx_loaded = False
 
             st.toast("페이지를 새로고침했습니다.")
 
@@ -3271,7 +3316,6 @@ elif st.session_state.menu == "ASP 중재":
         ) 
     
     df_inter_data = load_inter_data()
-
 
     st.markdown("""
     <div class="section-title-box">
