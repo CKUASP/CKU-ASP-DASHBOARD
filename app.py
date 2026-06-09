@@ -82,8 +82,8 @@ if not st.session_state.authenticated:
     ">
     """, unsafe_allow_html=True)
     
-    with open("logo1.png", "rb") as image_file:
-        logo1_base64 = base64.b64encode(
+    with open("circle1.png", "rb") as image_file:
+        circle1_base64 = base64.b64encode(
             image_file.read()
         ).decode()
 
@@ -93,33 +93,33 @@ if not st.session_state.authenticated:
 
         st.markdown(f"""
         <div style="
-            background:#214d99;
+            background:#f9f9f9;
             border-radius:32px;
-            padding:24px 40px;
+            padding:16px 40px;
             box-shadow:0 6px 20px rgba(0,0,0,0.12);
             text-align:center;
             margin-bottom:20px;
         ">
 
         <!-- 로고 -->
-        <img src="data:image/png;base64,{logo1_base64}" style="
-            width:130px;
+        <img src="data:image/png;base64,{circle1_base64}" style="
+            width:260px;
             height:auto;
             margin-bottom:6px;
         ">
 
         <div style="
-            font-size:32px;
+            font-size:30px;
             font-weight:800;
-            color:white;
+            color:#024ea2;
             margin-bottom:10px;
         ">
-            가톨릭관동대학교<br/> 국제성모병원<br/> ASP DASHBOARD
+            ASP DASHBOARD
         </div>
 
         <div style="
-            color:white;
-            font-size:16px;
+            color:#024ea2;
+            font-size:14px;
         ">
             기관 이메일 인증 후 이용 가능합니다
         </div>
@@ -235,7 +235,7 @@ div[data-testid="stPlotlyChart"] {
 
 /* 메인 제목 박스 */
 .title-box {
-    background: #214d99;
+    background: #1c4697;
     padding: 14px 20px;
     border-radius: 28px;
     margin-bottom: 10px;
@@ -246,19 +246,21 @@ div[data-testid="stPlotlyChart"] {
     display: flex;
 
     align-items: center;
+    flex-direction: column;
 
     justify-content: center;
 
-    gap: 34px;
+    gap: 0px;
 }
 
 
 /* 메인 제목 글씨 */
 .title-text {
-    color: white;
-    font-size: 36px;
+    color: #f9f9fc;
+    font-size: 28px;
     font-weight: 600;
-    margin: 0;
+    text-align: center;
+    margin-top: -26px;
 }
 
 /* 그래프 제목 박스 */
@@ -740,8 +742,8 @@ div[data-testid="stSpinner"].stCacheSpinner {
 
 import base64
 
-with open("logo1.png", "rb") as image_file:
-    logo1_base64 = base64.b64encode(
+with open("long1.png", "rb") as image_file:
+    long1_base64 = base64.b64encode(
         image_file.read()
     ).decode()
 
@@ -752,18 +754,17 @@ title_html = f"""
 <div style="
     display:flex;
     align-items:center;
-    gap:5px;
+    gap:0px;
 ">
 
-<img src="data:image/png;base64,{logo1_base64}" style="
-    height:110px;
+<img src="data:image/png;base64,{long1_base64}" style="
+    height:80px;
     width:auto;
 ">
 </div>
 
 <!-- 제목 -->
 <div class="title-text">
-    가톨릭관동대학교 국제성모병원<br>
     ASP DASHBOARD
 </div>
 
