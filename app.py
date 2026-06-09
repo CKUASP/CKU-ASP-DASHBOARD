@@ -235,10 +235,10 @@ div[data-testid="stPlotlyChart"] {
 
 /* 메인 제목 박스 */
 .title-box {
-    background: #1c4697;
-    padding: 14px 20px;
+    background: #0d4da2;
+    padding: 8px 20px;
     border-radius: 28px;
-    margin-bottom: 10px;
+    margin-bottom: 16px;
 
     /* 그림자 */
     box-shadow: 0 4px 14px rgba(0,0,0,0.14);
@@ -256,11 +256,12 @@ div[data-testid="stPlotlyChart"] {
 
 /* 메인 제목 글씨 */
 .title-text {
-    color: #f9f9fc;
+    color: #ffffff;
     font-size: 28px;
-    font-weight: 600;
+    font-weight: 500;
     text-align: center;
     margin-top: -26px;
+    margin-bottom: 8px;
 }
 
 /* 그래프 제목 박스 */
@@ -742,8 +743,8 @@ div[data-testid="stSpinner"].stCacheSpinner {
 
 import base64
 
-with open("long1.png", "rb") as image_file:
-    long1_base64 = base64.b64encode(
+with open("long2.png", "rb") as image_file:
+    long2_base64 = base64.b64encode(
         image_file.read()
     ).decode()
 
@@ -757,8 +758,8 @@ title_html = f"""
     gap:0px;
 ">
 
-<img src="data:image/png;base64,{long1_base64}" style="
-    height:80px;
+<img src="data:image/png;base64,{long2_base64}" style="
+    height:110px;
     width:auto;
 ">
 </div>
