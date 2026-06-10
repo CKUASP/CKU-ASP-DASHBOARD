@@ -27,7 +27,7 @@ try:
     ADMIN_CODE = st.secrets["admin_code"]
 except:
     APP_PASSWORD = "jymq rvhv siab farg"
-    ADMIN_CODE = "Ish2026**"
+    ADMIN_CODE = "CKUASP**"
 
 if "verification_code" not in st.session_state:
     st.session_state.verification_code = None
