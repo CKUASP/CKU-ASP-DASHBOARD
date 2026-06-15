@@ -980,23 +980,11 @@ elif st.session_state.menu == "항생제 사용량":
     @st.cache_data(ttl=86400)
     def load_data():
 
-        df = pd.read_excel(
-            "DOT 대시보드.xlsb",
-            sheet_name="ASP",
-            engine="pyxlsb"
-        )
+        df = pd.read_parquet("ASP.parquet")
 
-        day_df = pd.read_excel(
-            "DOT 대시보드.xlsb",
-            sheet_name="재원일수",
-            engine="pyxlsb"
-        )
+        day_df = pd.read_parquet("재원일수.parquet")
 
-        master_df = pd.read_excel(
-            "DOT 대시보드.xlsb",
-            sheet_name="마스터",
-            engine="pyxlsb"
-        )
+        master_df = pd.read_parquet("마스터.parquet")
 
         return df, day_df, master_df
 
