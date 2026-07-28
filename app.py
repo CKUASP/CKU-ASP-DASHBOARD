@@ -267,11 +267,7 @@ div[data-testid="stPlotlyChart"] {
 /* 그래프 제목 박스 */
 .chart-title-box {
 
-    background: linear-gradient(
-        135deg,
-        #eaf3ff,
-        #dcecff
-    );
+    background: #f1f7fe;
 
     padding: 14px 24px;
 
@@ -281,7 +277,7 @@ div[data-testid="stPlotlyChart"] {
 
     margin-left: 28px;
 
-    margin-bottom: -25px;
+    margin-bottom: -10px;
 
     position: relative;
 
@@ -299,9 +295,9 @@ div[data-testid="stPlotlyChart"] {
 
     font-size: 20px;
 
-    font-weight: 700;
+    font-weight: 800;
 
-    color: #1f1f1f;
+    color: #17406d;
 
     margin: 0;
 }
@@ -309,7 +305,7 @@ div[data-testid="stPlotlyChart"] {
 /* 컬럼 제목 박스 */
 .column-title-box {
 
-    background-color: #214d99;
+    background-color: #f1f7fe;
 
     padding: 14px 24px;
 
@@ -319,7 +315,9 @@ div[data-testid="stPlotlyChart"] {
 
     margin-left: 0px;
 
-    margin-bottom: 15px;
+    margin-bottom: 5px;
+
+    position: relative;
 
     pointer-events: none;
 
@@ -335,7 +333,7 @@ div[data-testid="stPlotlyChart"] {
 
     font-weight: 600;
 
-    color: white;
+    color: #17406d;
 
     margin: 0;
 }
@@ -738,6 +736,52 @@ div[data-testid="stSpinner"].stCacheSpinner {
     align-items:center;
 }
 
+.drug-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:15px;
+}
+
+.drug-table th{
+    background:#f8fafc;
+    color:#17406d;
+    font-weight:550;
+    font-size:15px;
+    text-align:center;
+    padding:8px;
+    border:1px solid #ddd;
+}
+
+.drug-table td{
+    background:white;
+    color:#222;
+    text-align:center;
+    padding:6px;
+    border:1px solid #eee;
+}
+
+.drug-table th:first-child{
+    text-align:center;
+    background:#f8fafc;
+}
+
+.drug-table tbody tr:first-child td{
+    background:#dbe7f5;      /* 일반 행보다 조금 진한 배경 */
+    font-weight:bold;
+    text-align:center;       /* 전체 행 가운데 정렬 */
+    border-top:2px solid #b7c9e2;
+    border-bottom:2px solid #b7c9e2;
+}
+
+/* 첫 번째 열의 데이터(성분명)는 왼쪽 */
+.drug-table td:first-child{
+    background:#f1f5f9;
+    font-weight:500;
+    text-align:left;
+    white-space:nowrap;
+    padding-left:12px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -886,16 +930,16 @@ with center:
     with col4:
 
         st.button(
-            "👨‍⚕️ ASP 전담팀",
+            "👨‍⚕️ASP팀 활동",
             use_container_width=True,
             key="menu3",
             type=(
                 "secondary"
-                if st.session_state.menu == "ASP 전담팀"
+                if st.session_state.menu == "ASP팀 활동"
                 else "primary"
             ),
             on_click=lambda: st.session_state.update(
-                menu="ASP 전담팀"
+                menu="ASP팀 활동"
             )
         )
 
@@ -1770,12 +1814,12 @@ elif st.session_state.menu == "항생제 사용량":
 
     fig1.update_layout(
 
-        height=440,
+        height=360,
 
         xaxis_title=None,
 
         yaxis=dict(
-            range=[0, summary1["항생제 사용량 (DOT/1,000 patient-days)"].max() * 1.5]
+            range=[0, summary1["항생제 사용량 (DOT/1,000 patient-days)"].max() * 1.15]
         ),
 
         paper_bgcolor='white',
@@ -1827,6 +1871,15 @@ elif st.session_state.menu == "항생제 사용량":
 
     trend = np.poly1d(coef)
 
+    slope = coef[0]
+
+    if slope > 0:
+        trend_text = f"<b>+{slope:.2f}</b> DOT/1,000 patient-days"
+    elif slope < 0:
+        trend_text = f"<b> {slope:.2f}</b> DOT/1,000 patient-days"
+    else:
+        trend_text = f"<b>0.00</b> DOT/1,000 patient-days"
+
     # 추세선 추가
     fig1.add_trace(
         go.Scatter(
@@ -1839,7 +1892,10 @@ elif st.session_state.menu == "항생제 사용량":
                 color="#17406D",
                 width=1,
                 dash="dot"
-            )
+            ),
+             hovertemplate=
+            "기울기<br>" +
+            f"{trend_text}<extra></extra>"
         )
     )
 
@@ -1907,12 +1963,11 @@ elif st.session_state.menu == "항생제 사용량":
     category_order = top7["성분통합키"].tolist()
 
     # 꺾은선 그래프
-    fig2 = px.area(
+    fig2 = px.bar(
         summary2,
         x="분기",
         y="항생제 사용량(DOT/1,000 patient-days)",
         color="성분통합키",
-        markers=True,
 
         category_orders={
             "분기": quarter_order,
@@ -1941,12 +1996,14 @@ elif st.session_state.menu == "항생제 사용량":
 
     fig2.update_layout(
 
+        barmode="stack",
+
         height=440,
 
         xaxis_title=None,
 
         yaxis=dict(
-            range=[0,250]
+            range=[0,225]
         ),
 
         paper_bgcolor='white',
@@ -1972,7 +2029,7 @@ elif st.session_state.menu == "항생제 사용량":
 
         # 글씨 약간 키우기
         font=dict(
-            size=10
+            size=11
         )
 
     ),
@@ -1982,14 +2039,16 @@ elif st.session_state.menu == "항생제 사용량":
         legend_title_text=""
     )
 
+
     fig2.update_traces(
-        line=dict(width=1),
-        
+        width=0.45,   # 0~1 사이, 작을수록 얇아짐
         hovertemplate=
         "<b>%{fullData.name}</b><br>" +
         "분기: %{x}<br>" +
-        "항생제 사용량: %{y:.1f}<extra></extra>"   
+        "항생제 사용량: %{y:.1f}<extra></extra>"
     )
+
+
 
     # =========================
     # 총 항생제 사용량
@@ -2032,335 +2091,173 @@ elif st.session_state.menu == "항생제 사용량":
         key="graph2"
     )
 
+    # =========================
+    # 제한항생제 표
+    # =========================
+
+    colors = [
+        "#8DBBFF",
+        "#9FD08F",
+        "#F5B56E",
+        "#EE8F8F",
+        "#C99AF5",
+        "#82DDF0",
+        "#F2A9D1",
+    ]
+
+    color_map = {
+        drug: colors[i % len(colors)]
+        for i, drug in enumerate(category_order)
+    }
+
+    # -------------------------
+    # TOP7 표 생성
+    # -------------------------
+
+    table_df = (
+        summary2
+        .pivot(
+            index="성분통합키",
+            columns="분기",
+            values="항생제 사용량(DOT/1,000 patient-days)"
+        )
+        .reindex(category_order)
+        .reindex(columns=quarter_order)
+        .fillna(0)
+        .round(1)
+    )
+
+    table_df.columns.name = None
+
+    latest_q = quarter_order[-1]
+    prev_q = quarter_order[-2]
+
+    # -------------------------
+    # 모든 제한항생제 총합
+    # (TOP7이 아니라 전체)
+    # -------------------------
+
+    monthly_total = (
+        abx_df
+        .groupby(["분기", "처방 월"])["고유키"]
+        .nunique()
+        .reset_index(name="DOT")
+    )
+
+    monthly_total["DOT"] = (
+        monthly_total["DOT"]
+        /
+        monthly_total["처방 월"].map(day_dict)
+        * 1000
+    )
+
+    total_row = (
+        monthly_total
+        .groupby("분기")["DOT"]
+        .mean()
+        .reindex(quarter_order)
+        .fillna(0)
+        .round(1)
+    )
+
+    def add_arrow(current, previous):
+
+        current = float(current)
+        previous = float(previous)
+
+        if current > previous:
+            return (
+                f"{current:.1f} "
+                '<span style="color:#e53935;font-size:16px;font-weight:bold;">▲</span>'
+            )
+
+        elif current < previous:
+            return (
+                f"{current:.1f} "
+                '<span style="color:#1e88e5;font-size:16px;font-weight:bold;">▼</span>'
+            )
+
+        else:
+            return f"{current:.1f}"
+
+
+    # 첫 행 추가
+    table_df = pd.concat(
+        [pd.DataFrame([total_row], index=["TOTAL"]), table_df]
+    )
+
+    # 마지막 분기 화살표
+    table_df[latest_q] = table_df.apply(
+        lambda row: add_arrow(
+            row[latest_q],
+            row[prev_q]
+        ),
+        axis=1
+    )
+
+    # 나머지 분기 문자열 변환
+    for q in quarter_order[:-1]:
+        table_df[q] = table_df[q].map(lambda x: f"{x:.1f}")
+
+    # 첫 번째 열 생성
+    name_col = ["<b>제한항생제 총합</b>"] + [
+        f'<span style="display:inline-block;width:10px;height:10px;'
+        f'border-radius:50%;background:{color_map[d]};'
+        f'margin-right:8px;vertical-align:middle;"></span>{d}'
+        for d in category_order
+    ]
+
+    table_df.insert(0, "", name_col)
+
+    table_df = table_df.reset_index(drop=True)
+
+    # 출력
+    st.markdown(
+        table_df.to_html(
+            escape=False,
+            index=False,
+            classes="drug-table"
+        ),
+        unsafe_allow_html=True
+    )
+
+
         # =========================
     # 진료과 선택
     # =========================
 
-    dept_list1 = sorted(df["진료과한글"].dropna().unique(),
-        key=lambda x: (x == "기타", x))
-
+    dept_list1 = sorted(
+        [x for x in df["분류"].dropna().unique() if x != "0x2a"],
+        key=lambda x: (x == "기타", x)
+    )
     st.markdown("""
     <div class="section-title-box">
         <div class="section-title-text">
-            진료과별 항생제 사용량
+            계열별 항생제 사용량
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    selected_dept = st.selectbox(
-        "진료과 선택",
-        ["전체"] + dept_list1
-    )
-
-    # 선택 진료과 필터
-    if selected_dept != "전체":
-        filtered_df = df[df["진료과한글"] == selected_dept]
-    else:
-        filtered_df = df.copy()
 
             # =========================
     # Cephamycin vs 3세대 Cephalosporins
     # =========================
 
-    target_df = filtered_df[
-        filtered_df["분류"].isin([
-            "3세대 Cephalosporins",
-            "Cephamycin"
-            
-        ])
-    ]
-    monthly_compare = (
-        target_df
-        .groupby(["분기", "처방 월", "분류"])["고유키"]
-        .nunique()
-        .reset_index(name="DOT")
-    )
 
-    monthly_compare["DOT"] = (
-        monthly_compare["DOT"]
-        /
-        monthly_compare["처방 월"].map(day_dict)
-        * 1000
-    )
-
-    summary_compare = (
-        monthly_compare
-        .groupby(["분기", "분류"])["DOT"]
-        .mean()
-         .reset_index()
-    )
-
-    summary_compare.columns = [
-        "분기",
-        "분류",
-        "사용량"
-    ]
-
-    # 모든 분기 × 분류 조합 생성
-    all_combinations = pd.MultiIndex.from_product(
-        [
-            quarter_order,
-            ["3세대 Cephalosporins", "Cephamycin"]
-        ],
-        names=["분기", "분류"]
-    ).to_frame(index=False)
-
-    # 없는 분기는 0으로 채우기
-    summary_compare = (
-        all_combinations
-        .merge(
-            summary_compare,
-            on=["분기", "분류"],
-            how="left"
-        )
-        .fillna(0)
-    )
+    selected_dept = st.selectbox(
+    "계열 선택",
+    ["전체"] + dept_list1
+)
 
 
-    fig_compare = px.bar(
-        summary_compare,
-        x="분기",
-        y="사용량",
-        color="분류",
-        barmode="group",
-
-        category_orders={
-            "분기": quarter_order
-        },
-
-        color_discrete_map={
-            "3세대 Cephalosporins": "#6FC7C0",   # 중간 초록
-            "Cephamycin": "#F2A0A0"              # 파스텔 블루
-        },
-
-        text="사용량"
-    )
-    fig_compare.update_layout(
-
-        height=440,
-
-        xaxis_title=None,
-        yaxis_title="항생제 사용량 (DOT/1,000 patient-days)",
-
-        yaxis=dict(
-            range=[0, summary_compare["사용량"].max() * 1.25]
-        ),
-
-
-        paper_bgcolor='white',
-        plot_bgcolor='white',
-
-        margin=dict(
-            l=20,
-            r=20,
-            t=20,
-            b=20
-        ),
-
-        legend_title_text=""
-    )
-    fig_compare.add_annotation(
-        x=1.19,
-        y=0.60,
-        xref="paper",
-        yref="paper",
-         text=(
-            "<b>3세대 Cephalosporins</b><br>"
-            "Cefpodoxime, Cefixime,<br>"
-            "Cefditoren, Cefcapene,<br>"
-            "Ceftriaxone, Cefotaxime,<br>"
-            "Ceftizoxime, Ceftazidime"
-        ),
-        showarrow=False,
-
-        # 박스 스타일
-        bgcolor="white",
-        bordercolor="#6fc7c0",
-        borderwidth=1,
-        borderpad=8,
-
-        align="left",
-
-        font=dict(
-            size=11,
-            color="#102a43"
-        )
-    )
-
-    fig_compare.add_annotation(
-        x=1.19,
-        y=0.40,
-        xref="paper",
-        yref="paper",
-         text=(
-            "<b>Cephamycin          </b><br>"
-            "Cefotetan, Flomoxef          "
-        ),
-        showarrow=False,
-
-        # 박스 스타일
-        bgcolor="white",
-        bordercolor="#f2a0a0",
-        borderwidth=1,
-        borderpad=8,
-
-        align="left",
-
-        font=dict(
-            size=11,
-            color="#102a43"
-        )
-    )
-
-    fig_compare.update_traces(
-        texttemplate='%{text:,.1f}',
-        textposition='auto',
-        hovertemplate=
-        "<b>%{fullData.name}</b><br>" +
-        "분기: %{x}<br>" +
-        "항생제 사용량: %{y:.1f}<extra></extra>"   
-    )
-    
-    st.markdown("""
-    <div class="chart-title-box">
-         <div style="
-            display:flex;
-            align-items:center;
-            gap:10px;
-        ">
-        <div class="chart-title">
-            🏥 분기별 진료과 3세대 Cephalosporins 및 Cephamycin 사용량 평균
-        </div>
-
-
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.plotly_chart(
-        fig_compare,
-        use_container_width=True,
-        config={"displayModeBar": False},
-        key="graph3"
-    )
-
-    st.markdown("""
-    <div style="
-        background:#f1f7fe;
-        border:1px solid #dbeafe;
-        border-left:6px solid #60a5fa;
-        border-radius:14px;
-        padding:6px 22px;
-        margin-top:8px;
-        margin-bottom:15px;
-        box-shadow:0 2px 6px rgba(0,0,0,0.05);
-    ">
-    <div style="
-        display:flex;
-        gap:30px;
-        align-items:flex-start;
-    ">
-
-    <!-- 좌측 설명 -->
-    <div style="
-        flex:2;
-        padding-right:0px;
-        border-right:1px solid #d6e4f0;
-    ">
-
-    <div style="
-        font-size:22px;
-        font-weight:800;
-        color:#17406D;
-        margin-top:6px;
-        margin-bottom:10px;
-    ">
-    💡 Cephamycin이란?
-    </div>
-
-    <div style="
-        font-size:14px;
-        line-height:1.8;
-        color:#374151;
-    ">
-
-    <b>Cephamycin</b>은 2세대 Cephalosporin으로 분류되나 Cefaclor와는 특성이 다릅니다.
-    <br>
-    주요 특징은 <b>광범위 베타락탐분해효소(extended-spectrum <i>β</i>-lactamase,ESBL)</b>에 저항성을 가지고 있으며,
-    <i>Bacteroides fragilis</i>와 같은 혐기균에 효과가 있습니다.
-    <br><br>
-    <b>그러나 최근들어 <i>B. fragilis</i>에 대한 내성이 지속적으로 증가하고 있어 적정사용에 대한 관리가 필요합니다.</b>
-    </div>
-    </div>
-
-    <!-- 우측 표 -->
-    <div style="
-        flex:1;
-        padding-left:0px;
-        min-width:320px;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        align-items:center;
-        min-height:180px;
-    ">
-    <div style="
-        width:100%;
-        max-width:400px;
-        background:#d9e9ff;
-        color:#17406D;
-        text-align:center;
-        font-weight:800;
-        padding:8px;
-        margin-top:8px;
-        margin-bottom:10px;
-        border-radius:8px;
-    ">
-    본원 Cephamycin계 항생제
-    </div>
-
-    <table style="
-        width:100%;
-        max-width:400px;
-        border-collapse:collapse;
-        border-radius:8px;
-        overflow:hidden;
-        font-size:14px;
-        text-align:center;
-    ">
-
-    <tr style="
-        background:#214d99;
-        color:white;
-    ">
-        <th style="padding:8px;">약품코드</th>
-        <th style="padding:8px;">약품명</th>
-        <th style="padding:8px;">성분명</th>
-    </tr>
-
-    <tr>
-        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">W-CTT1GDJ</td>
-        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">종근당 세포테탄 주 1G</td>
-        <td style="padding:8px;border-bottom:1px solid #e5e7eb;"><i>CEFOTETAN</i></td>
-    </tr>
-
-    <tr>
-        <td style="padding:8px;">W-FX500J</td>
-        <td style="padding:8px;">후루마린주 0.5G</td>
-        <td style="padding:8px;"><i>FLOMOXEF</i></td>
-    </tr>
-
-    </table>
-
-    </div>
-
-    </div>
-
-    </div>
-    """, unsafe_allow_html=True)
+    if selected_dept != "전체":
+        filtered_df = df[df["분류"] == selected_dept]
+    else:
+        filtered_df = df.copy()
 
     # =========================
     # 4번 그래프
-    # 진료과별 TOP10 성분 사용량
+    # 계열별 TOP10 성분 사용량
     # =========================
 
     # 월별 / 성분별 고유키 개수
@@ -2477,12 +2374,18 @@ elif st.session_state.menu == "항생제 사용량":
         color_discrete_sequence=px.colors.qualitative.Dark24
     )
 
+    max_y = summary4["항생제 사용량"].max()
+
     fig4.update_layout(
 
-        height=600,
+        height=450,
 
         xaxis_title=None,
         yaxis_title="항생제 사용량 (DOT/1,000 patient-days)",
+
+        yaxis=dict(
+            range=[0, 180]
+        ),
 
         paper_bgcolor='rgba(255,255,255,0)',
         plot_bgcolor='rgba(255,255,255,0)',
@@ -2521,7 +2424,7 @@ elif st.session_state.menu == "항생제 사용량":
     st.markdown("""
     <div class="chart-title-box">
         <div class="chart-title">
-            📈 분기별 진료과 다빈도 항생제 사용량 평균
+            📈 분기별 항생제 사용량 평균 (계열별)
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -2533,6 +2436,422 @@ elif st.session_state.menu == "항생제 사용량":
         key="graph4"
     )
 
+    colors = px.colors.qualitative.Dark24
+
+    color_map = {
+        drug: colors[i % len(colors)]
+        for i, drug in enumerate(legend_order)
+    }
+
+    # 표 형태로 변환
+# 표 형태로 변환
+    table_df = (
+        summary4
+        .pivot(
+            index="성분통합키",
+            columns="분기",
+            values="항생제 사용량"
+        )
+        .reindex(legend_order)
+        .reindex(columns=quarter_order)
+        .fillna(0)
+        .round(1)
+    )
+
+    table_df.columns.name = None
+
+    # =========================
+    # 계열 전체 행 생성
+    # =========================
+
+    latest_q = quarter_order[-1]
+    prev_q = quarter_order[-2]
+
+# fig_compare와 동일한 방식으로 계열 전체 사용량 계산
+    monthly_total = (
+        filtered_df
+        .groupby(["분기", "처방 월"])["고유키"]
+        .nunique()
+        .reset_index(name="DOT")
+    )
+
+    monthly_total["DOT"] = (
+        monthly_total["DOT"]
+        /
+        monthly_total["처방 월"].map(day_dict)
+        * 1000
+    )
+
+    total_row = (
+        monthly_total
+        .groupby("분기")["DOT"]
+        .mean()
+        .reindex(quarter_order)
+        .fillna(0)
+        .round(1)
+    )
+
+    def add_arrow(current, previous):
+        current = float(current)
+        previous = float(previous)
+
+        if current > previous:
+            return (
+                f'{current:.1f} '
+                '<span style="color:#e53935;font-size:16px;font-weight:bold;">▲</span>'
+            )
+        elif current < previous:
+            return (
+                f'{current:.1f} '
+                '<span style="color:#1e88e5;font-size:16px;font-weight:bold;">▼</span>'
+            )
+        else:
+            return f'{current:.1f}'
+
+
+    # 첫 번째 행(계열명)
+    if selected_dept == "전체":
+        total_name = "<b>전체</b>"
+    else:
+        total_name = f"<b>{selected_dept}</b>"
+
+    total_html = total_row.to_dict()
+
+    table_df = pd.concat(
+        [pd.DataFrame([total_html], index=["TOTAL"]), table_df]
+    )
+
+    table_df[latest_q] = table_df.apply(
+        lambda row: add_arrow(
+            float(row[latest_q]),
+            float(row[prev_q])
+        ),
+        axis=1
+    )
+
+    for q in quarter_order[:-1]:
+        table_df[q] = table_df[q].map(lambda x: f"{x:.1f}") 
+
+
+    # 첫 번째 열(성분명) 추가
+    name_col = [total_name] + [
+        f'<span style="display:inline-block;width:10px;height:10px;'
+        f'border-radius:50%;background:{color_map[d]};'
+        f'margin-right:8px;vertical-align:middle;"></span>{d}'
+        for d in legend_order
+    ]
+
+    table_df.insert(0, "", name_col)
+
+    table_df = table_df.reset_index(drop=True)
+
+    # HTML 출력
+    st.markdown(
+        table_df.to_html(
+            escape=False,
+            index=False,
+            classes="drug-table"
+        ),
+        unsafe_allow_html=True
+    )
+
+
+    target_df = df[
+        df["분류"].isin([
+            "3세대 Cephalosporins",
+            "Cephamycins"
+        ])
+    ]
+    monthly_compare = (
+        target_df
+        .groupby(["분기", "처방 월", "분류"])["고유키"]
+        .nunique()
+        .reset_index(name="DOT")
+    )
+
+    monthly_compare["DOT"] = (
+        monthly_compare["DOT"]
+        /
+        monthly_compare["처방 월"].map(day_dict)
+        * 1000
+    )
+
+    summary_compare = (
+        monthly_compare
+        .groupby(["분기", "분류"])["DOT"]
+        .mean()
+         .reset_index()
+    )
+
+    summary_compare.columns = [
+        "분기",
+        "분류",
+        "사용량"
+    ]
+
+    # 모든 분기 × 분류 조합 생성
+    all_combinations = pd.MultiIndex.from_product(
+        [
+            quarter_order,
+            ["3세대 Cephalosporins", "Cephamycins"]
+        ],
+        names=["분기", "분류"]
+    ).to_frame(index=False)
+
+    # 없는 분기는 0으로 채우기
+    summary_compare = (
+        all_combinations
+        .merge(
+            summary_compare,
+            on=["분기", "분류"],
+            how="left"
+        )
+        .fillna(0)
+    )
+
+
+    fig_compare = px.bar(
+        summary_compare,
+        x="분기",
+        y="사용량",
+        color="분류",
+        barmode="group",
+
+        category_orders={
+            "분기": quarter_order
+        },
+
+        color_discrete_map={
+            "3세대 Cephalosporins": "#6FC7C0",   # 중간 초록
+            "Cephamycins": "#F2A0A0"              # 파스텔 블루
+        },
+
+        text="사용량"
+    )
+    fig_compare.update_layout(
+
+        height=440,
+
+        xaxis_title=None,
+        yaxis_title="항생제 사용량 (DOT/1,000 patient-days)",
+
+        yaxis=dict(
+            range=[0, summary_compare["사용량"].max() * 1.25]
+        ),
+
+
+        paper_bgcolor='white',
+        plot_bgcolor='white',
+
+        margin=dict(
+            l=20,
+            r=20,
+            t=20,
+            b=20
+        ),
+
+        legend_title_text=""
+    )
+    fig_compare.add_annotation(
+        x=1.19,
+        y=0.60,
+        xref="paper",
+        yref="paper",
+         text=(
+            "<b>3세대 Cephalosporins</b><br>"
+            "Cefpodoxime, Cefixime,<br>"
+            "Cefditoren, Cefcapene,<br>"
+            "Ceftriaxone, Cefotaxime,<br>"
+            "Ceftizoxime, Ceftazidime"
+        ),
+        showarrow=False,
+
+        # 박스 스타일
+        bgcolor="white",
+        bordercolor="#6fc7c0",
+        borderwidth=1,
+        borderpad=8,
+
+        align="left",
+
+        font=dict(
+            size=11,
+            color="#102a43"
+        )
+    )
+
+    fig_compare.add_annotation(
+        x=1.19,
+        y=0.40,
+        xref="paper",
+        yref="paper",
+         text=(
+            "<b>Cephamycins          </b><br>"
+            "Cefotetan, Flomoxef          "
+        ),
+        showarrow=False,
+
+        # 박스 스타일
+        bgcolor="white",
+        bordercolor="#f2a0a0",
+        borderwidth=1,
+        borderpad=8,
+
+        align="left",
+
+        font=dict(
+            size=11,
+            color="#102a43"
+        )
+    )
+
+    fig_compare.update_traces(
+        texttemplate='%{text:,.1f}',
+        textposition='auto',
+        hovertemplate=
+        "<b>%{fullData.name}</b><br>" +
+        "분기: %{x}<br>" +
+        "항생제 사용량: %{y:.1f}<extra></extra>"   
+    )
+    
+    st.markdown("""
+    <div class="chart-title-box">
+         <div style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+        ">
+        <div class="chart-title">
+            🏥 분기별 3세대 Cephalosporins 및 Cephamycins 사용량 평균
+        </div>
+
+
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.plotly_chart(
+        fig_compare,
+        use_container_width=True,
+        config={"displayModeBar": False},
+        key="graph3"
+    )
+
+    st.markdown("""
+    <div style="
+        background:#f1f7fe;
+        border:1px solid #dbeafe;
+        border-left:6px solid #60a5fa;
+        border-radius:14px;
+        padding:6px 22px;
+        margin-top:8px;
+        margin-bottom:15px;
+        box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    ">
+    <div style="
+        display:flex;
+        gap:30px;
+        align-items:flex-start;
+    ">
+
+    <!-- 좌측 설명 -->
+    <div style="
+        flex:2;
+        padding-right:0px;
+        border-right:1px solid #d6e4f0;
+    ">
+
+    <div style="
+        font-size:22px;
+        font-weight:800;
+        color:#17406D;
+        margin-top:6px;
+        margin-bottom:10px;
+    ">
+    💡 Cephamycin이란?
+    </div>
+
+    <div style="
+        font-size:14px;
+        line-height:1.8;
+        color:#374151;
+    ">
+
+    <b>Cephamycin</b>은 2세대 Cephalosporin으로 분류되나 Cefaclor와는 특성이 다릅니다.
+    <br>
+    주요 특징은 <b>광범위 베타락탐분해효소(extended-spectrum <i>β</i>-lactamase, ESBL)</b>에 저항성을 가지고 있으며,
+    <i>Bacteroides fragilis</i>와 같은 혐기균에 효과가 있습니다.
+    <br><br>
+    <b>그러나 최근들어 <i>B. fragilis</i>에 대한 내성이 지속적으로 증가하고 있어 적정사용에 대한 관리가 필요합니다.</b>
+    </div>
+    </div>
+
+    <!-- 우측 표 -->
+    <div style="
+        flex:1;
+        padding-left:0px;
+        min-width:320px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        min-height:180px;
+    ">
+    <div style="
+        width:100%;
+        max-width:400px;
+        background:#d9e9ff;
+        color:#17406D;
+        text-align:center;
+        font-weight:800;
+        padding:8px;
+        margin-top:8px;
+        margin-bottom:10px;
+        border-radius:8px;
+    ">
+    본원 Cephamycin계 항생제
+    </div>
+
+    <table style="
+        width:100%;
+        max-width:400px;
+        border-collapse:collapse;
+        border-radius:8px;
+        overflow:hidden;
+        font-size:14px;
+        text-align:center;
+    ">
+
+    <tr style="
+        background:#214d99;
+        color:white;
+    ">
+        <th style="padding:8px;">약품코드</th>
+        <th style="padding:8px;">약품명</th>
+        <th style="padding:8px;">성분명</th>
+    </tr>
+
+    <tr>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">W-CTT1GDJ</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">종근당 세포테탄 주 1G</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;"><i>CEFOTETAN</i></td>
+    </tr>
+
+    <tr>
+        <td style="padding:8px;">W-FX500J</td>
+        <td style="padding:8px;">후루마린주 0.5G</td>
+        <td style="padding:8px;"><i>FLOMOXEF</i></td>
+    </tr>
+
+    </table>
+
+    </div>
+
+    </div>
+
+    </div>
+    """, unsafe_allow_html=True)
+
+
     dept_list2 = sorted([
         x for x in df["성분통합키"].dropna().unique()
         if str(x) != "0x2a" and str(x) != "Cefoperazone/sulbactam"
@@ -2541,7 +2860,7 @@ elif st.session_state.menu == "항생제 사용량":
     st.markdown("""
     <div class="section-title-box">
         <div class="section-title-text">
-            성분별 월별 항생제 사용량
+            올해의 월별 항생제 사용량
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -2550,6 +2869,11 @@ elif st.session_state.menu == "항생제 사용량":
 
     latest_df = df[df["처방 월"] == latest_month]
 
+    if selected_dept != "전체":
+        latest_df = latest_df[
+            latest_df["분류"] == selected_dept
+        ]
+    
     drug_usage = (
         latest_df
         .groupby("성분통합키")["고유키"]
@@ -2580,28 +2904,36 @@ elif st.session_state.menu == "항생제 사용량":
         for _, row in drug_usage.iterrows()
     }
 
-    selected_drug = st.selectbox(
-        "항생제 성분 선택",
-        ["전체"] + drug_usage["성분통합키"].tolist(),
-        format_func=lambda x:
-            "전체" if x == "전체"
-            else display_map.get(x, x)
-    )
+    if selected_dept == "전체":
 
-    # 선택 성분 필터
-    if selected_drug != "전체":
-
-        filtered_df = df[
-            df["성분통합키"] == selected_drug
-        ]
-
-        pie_source_df = filtered_df.copy()
+        drug_options = drug_usage["성분통합키"].tolist()
 
     else:
 
-        filtered_df = df.copy()
+        drug_options = [selected_dept] + drug_usage["성분통합키"].tolist()
 
-        pie_source_df = df.copy()
+    selected_drug = st.selectbox(
+        "항생제 성분 선택",
+        drug_options,
+        index=0,
+        format_func=lambda x:
+            display_map.get(x, x)
+    )
+
+    # 선택 성분 필터
+    if selected_dept != "전체" and selected_drug == selected_dept:
+
+        # 계열 전체 선택
+        filtered_df = df[
+            df["분류"] == selected_dept
+        ]
+
+    else:
+
+        # 성분 선택
+        filtered_df = df[
+            df["성분통합키"] == selected_drug
+        ]
 
     # 선택 성분 KPI
     selected_latest = (
@@ -2740,18 +3072,23 @@ elif st.session_state.menu == "항생제 사용량":
         """, unsafe_allow_html=True)
 
                             # 선택 성분의 항목코드 목록
-        if selected_drug == "전체":
+        if selected_dept != "전체" and selected_drug == selected_dept:
 
-            drug_info = pd.DataFrame(
-                columns=["항목코드", "약품명"]
+            selected_components = drug_usage["성분통합키"].tolist()
+
+            drug_info = (
+                master_df[
+                    master_df["성분통합키"].isin(selected_components)
+                ][["항목코드","약품명"]]
+                .drop_duplicates()
             )
-        
+
         else:
 
             drug_info = (
                 master_df[
                     master_df["성분통합키"] == selected_drug
-                ][["항목코드", "약품명"]]
+                ][["항목코드","약품명"]]
                 .drop_duplicates()
             )
 
@@ -2797,7 +3134,7 @@ elif st.session_state.menu == "항생제 사용량":
                 color:#102a43;
                 text-align:center;
             ">
-                🏥 본원 해당 성분
+                🏥 본원 원내 해당 성분
             </div>
             """, unsafe_allow_html=True)
 
@@ -2808,170 +3145,15 @@ elif st.session_state.menu == "항생제 사용량":
             )   
 
 
-    # =========================
-# 성분 분류
-# ========================
+ 
 
-        if selected_drug == "전체":
+    with col2:
 
-            selected_class = "-"
+        if selected_dept == "전체":
 
-        else:
-            class_info = (
-                master_df[
-                    master_df["성분통합키"] == selected_drug
-                ]["분류"]
-                .dropna()
-                .astype(str)
-                .str.strip()
-                .unique()
-            )
-
-            selected_class = (
-                ", ".join(class_info)
-                if len(class_info) > 0
-                else "-"
-            )
-            
-            if selected_class == "기타":
-                selected_class = "-"
-
-        tooltip_items = (
-            master_df[
-                master_df["분류"] == selected_class
-            ]["성분통합키"]
-            .dropna()
-            .astype(str)
-            .str.strip()
-            .unique()
-        )
-
-        tooltip_items = [
-            x for x in tooltip_items.unique()
-            if x not in [
-                "Cefoperazone/sulbactam",
-                "Cefuroxime"
-            ]
-        ]
-
-        tooltip_text = "".join(
-            [f"<div>• {item}</div>" for item in sorted(tooltip_items)]
-        )
-
-        if selected_class != "-":
-
-            st.markdown(f"""
-            <div style="
-                background:white;
-                border-radius:10px;
-                padding:20px 24px;
-                margin-top:10px;
-                box-shadow:0 2px 10px rgba(0,0,0,0.08);
-            ">
-
-            <div style="
-                font-size:20px;
-                font-weight:800;
-                color:#102a43;
-                text-align:center;
-                margin-bottom:15px;
-            ">
-                🧬 성분 분류
-            </div>
-
-            <div style="
-                text-align:center;
-                font-size:18px;
-                font-weight:600;
-                color:#374151;
-            ">
-                {selected_class}
-
-            <style>
-            .tooltip-container:hover .tooltip-box {{
-                visibility:visible !important;
-                opacity:1 !important;
-            }}
-            </style>
-
-            <div class="tooltip-container" style="
-                position:relative;
-                display:inline-block;
-                cursor:pointer;
-                margin-left:12px;
-            ">
-
-            <!-- 동그란 i -->
-            <div style="
-                width:24px;
-                height:24px;
-                border-radius:50%;
-                background:#e8eef7;
-                color:#17406D;
-                font-size:16px;
-                font-weight:700;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-            ">
-                i
-            </div>
-
-            <!-- 툴팁 -->
-            <div class="tooltip-box" style="
-                visibility:hidden;
-                opacity:0;
-                transition:0.2s;
-                position:absolute;
-                top:35px;
-                left:0;
-                width:200px;
-                background:#214d99;
-                color:white;
-                padding:18px 20px;
-                border-radius:16px;
-                box-shadow:0 8px 24px rgba(0,0,0,0.18);
-                z-index:999;
-                font-size:15px;
-                line-height:1.7;
-            ">
-
-            <div style="
-                font-size:14px;
-                font-weight:500;
-                text-align:left;
-            ">
-                {tooltip_text}
-            </div>
-
-            </div>
-
-            </div>
-
-            </div>
-
-            </div>
-
-            <style>
-            .tooltip-container:hover .tooltip-box {{
-                visibility:visible !important;
-                opacity:1 !important;
-            }}
-
-            </style>
-            """, unsafe_allow_html=True)
-
-# =========================
-# 분류별 사용량 추이
-# =========================
-
-        if (
-            selected_drug != "전체"
-            and selected_class != "-"
-        ):
-
+            # 전체 선택 → 선택한 성분 그래프
             class_df = df[
-                (df["분류"] == selected_class)
+                (df["성분통합키"] == selected_drug)
                 &
                 (df["처방 월"].isin([
                     "26/01",
@@ -2983,296 +3165,53 @@ elif st.session_state.menu == "항생제 사용량":
                 ]))
             ].copy()
 
-            class_trend = (
-                class_df
-                .groupby("처방 월")["고유키"]
-                .nunique()
-                .reset_index(name="DOT")
-            )
 
-            class_trend["DOT"] = (
-                class_trend["DOT"]
-                /
-                class_trend["처방 월"].map(day_dict)
-                * 1000
-            )
+        elif selected_drug == selected_dept:
 
-            month_order_2026 = [
-                "26/01",
-                "26/02",
-                "26/03",
-                "26/04",
-                "26/05",
-                "26/06"
-            ]
+            # 특정 계열 선택 + 계열명 선택 → 계열 전체 그래프
+            class_df = df[
+                (df["분류"] == selected_dept)
+                &
+                (df["처방 월"].isin([
+                    "26/01",
+                    "26/02",
+                    "26/03",
+                    "26/04",
+                    "26/05",
+                    "26/06"
+                ]))
+            ].copy()
 
-            class_trend["처방 월"] = pd.Categorical(
-                class_trend["처방 월"],
-                categories=month_order_2026,
-                ordered=True
-            )
 
-            class_trend = class_trend.sort_values(
-                "처방 월"
-            )
+        else:
 
-            class_trend["월표시"] = (
-                class_trend["처방 월"]
-                .astype(str)
-                .map({
-                    "26/01": "26년 1월",
-                    "26/02": "26년 2월",
-                    "26/03": "26년 3월",
-                    "26/04": "26년 4월",
-                    "26/05": "26년 5월",
-                    "26/06": "26년 6월"
-                })
-            )
+            # 특정 계열 선택 + 개별 성분 선택 → 성분 그래프
+            class_df = df[
+                (df["성분통합키"] == selected_drug)
+                &
+                (df["처방 월"].isin([
+                    "26/01",
+                    "26/02",
+                    "26/03",
+                    "26/04",
+                    "26/05",
+                    "26/06"
+                ]))
+            ].copy()
 
-            fig_class = px.bar(
-                class_trend,
-                x="월표시",
-                y="DOT",
-                text="DOT"
-            )
-
-            fig_class.update_traces(
-                texttemplate="%{y:.1f}",
-                textposition="outside",
-                marker_color="#82D4BB",
-                width=0.45,
-                hovertemplate=
-                "<b>" + selected_class + "</b><br>" +
-                "처방월: %{x}<br>" +
-                "항생제 사용량: %{y:.1f}<br>" +
-                "<extra></extra>"
-            )
-
-             # x축을 숫자로 변환
-            x_num = np.arange(len(class_trend))
-
-            # 선형회귀
-            coef = np.polyfit(
-                x_num,
-                class_trend["DOT"],
-                1
-            )
-
-            trend = np.poly1d(coef)
-
-            # 추세선 추가
-            fig_class.add_trace(
-                go.Scatter(
-                    x=class_trend["월표시"],
-                    y=trend(x_num),
-                    mode="lines",
-                    name="Trend",
-                    showlegend=False,
-                    line=dict(
-                        color="#17406D",
-                        width=2,
-                        dash="dot"
-                    ),
-                    hovertemplate=
-                    "<b>추세선</b><br>" +
-                    "DOT: %{y:.1f}<extra></extra>"
-                )
-            )
-
-            y_max = class_trend["DOT"].max() * 1.25
-
-            fig_class.update_layout(
-                height=400,
-
-                margin=dict(
-                    l=60,
-                    r=20,
-                    t=20,
-                    b=10
-                ),
-
-                xaxis_title=None,
-                yaxis_title="항생제 사용량 (DOT/1,000 patient-days)",
-                yaxis=dict(
-                    range=[0, y_max]
-                ),
-                paper_bgcolor="rgba(255,255,255,0)",
-                plot_bgcolor="rgba(255,255,255,0)"
-            )
-
-            st.markdown(f"""
-            <div style="margin-top:15px;">
-            <div class="column-title-box">
-                <div class="column-title">
-                    📊{selected_class} 계열 항생제 사용량 추이
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-            st.plotly_chart(
-                fig_class,
-                use_container_width=True,
-                config={"displayModeBar": False}
-            )
-
-            
-
-    with col2:
-                  # =========================
-    # 최근월 진료과별 사용량
-    # =========================
-
-        pie_df = pie_source_df[
-            pie_source_df["처방 월"] == latest_month
-        ].copy()
-
-        pie_df = (
-            pie_df
-            .groupby("진료과한글")["고유키"]
+        class_trend = (
+            class_df
+            .groupby("처방 월")["고유키"]
             .nunique()
             .reset_index(name="DOT")
         )
 
-        pie_df["DOT"] = (
-            pie_df["DOT"]
-            / day_dict[latest_month]
+        class_trend["DOT"] = (
+            class_trend["DOT"]
+            /
+            class_trend["처방 월"].map(day_dict)
             * 1000
         )
-
-        total_dot = pie_df["DOT"].sum()
-
-        pie_df["비율"] = (
-            pie_df["DOT"]
-            / total_dot
-            * 100
-        )
-
-        pie_df = pie_df.sort_values(
-            "비율",
-            ascending=False
-        )
-
-        # 5% 미만 → 기타
-
-        pie_original = pie_df.copy()
-
-        small_dept = pie_df[
-            pie_df["비율"] < 5
-        ]
-
-        major_dept = pie_df[
-            pie_df["비율"] >= 5
-        ]
-
-        major_dept = major_dept.sort_values(
-            "비율",
-            ascending=False
-        )
-
-        if len(small_dept) > 0:
-
-            etc_row = pd.DataFrame({
-                "진료과한글": ["기타(5% 미만)"],
-                "DOT": [small_dept["DOT"].sum()],
-                "비율": [small_dept["비율"].sum()]
-            })
-
-            pie_df = pd.concat(
-                [major_dept, etc_row],
-                ignore_index=True
-            )
-
-        else:
-
-            pie_df = major_dept.copy()
-
-        # TOP3 진료과
-        top3_dept = (
-            pie_original
-            .sort_values("DOT", ascending=False)
-            .head(3)
-        )
-
-        top3_list = top3_dept["진료과한글"].tolist()
-
-        # =========================
-        # 도넛차트
-        # =========================
-
-        color_map = {
-            "기타(5% 미만)": "#E5E7EB"
-        }
-        pie_df["label"] = (     
-            pie_df["비율"].round(1).astype(str)
-            + "%"
-        )
-        fig_donut = px.pie(
-            pie_df,
-            names="진료과한글",
-            values="DOT",
-            hole=0.45,
-            color="진료과한글",
-            color_discrete_map=color_map,
-            color_discrete_sequence=[
-                "#7FB3FF",
-                "#82D4BB",
-                "#F6C667",
-                "#F3A6AE",
-                "#B8B5FF",
-                "#9AD0F5",
-                "#FFD6A5",
-                "#CDEAC0",
-                "#FFCAD4"
-            ]
-        )
-
-        fig_donut.update_traces(
-            text=pie_df["label"],
-            textinfo="text",
-            textposition="inside",
-
-            insidetextorientation="horizontal",
-
-            textfont=dict(
-                size=16
-            ),
-
-            sort=False,
-            direction="clockwise",
-            rotation=0,
-            hovertemplate=
-            "<b>%{label}</b><br>" +
-            "항생제 사용량: %{value:.1f}<br>" +
-            "비율: %{percent}<extra></extra>"
-        )
-
-        fig_donut.update_layout(
-            height=450,
-            margin=dict(l=20, r=20, t=20, b=20),
-        )
-
-        st.markdown(f"""
-            <div class="column-title-box">
-                <div class="column-title">
-                    이 달의 {selected_drug} 진료과별 사용 비율
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-        st.plotly_chart(
-            fig_donut,
-            use_container_width=True,
-            config={"displayModeBar": False}
-        )
-        
-
-        # =========================
-        # TOP3 월별 추이
-        # =========================
-
-        trend_df = df[
-            df["성분통합키"] == selected_drug
-        ].copy()
 
         month_order_2026 = [
             "26/01",
@@ -3283,131 +3222,120 @@ elif st.session_state.menu == "항생제 사용량":
             "26/06"
         ]
 
-        trend_df = trend_df[
-            trend_df["처방 월"].isin(month_order_2026)
-        ]
-
-
-        trend_df = (
-            trend_df
-            .groupby(
-                ["처방 월", "진료과한글"]
-            )["고유키"]
-            .nunique()
-            .reset_index(name="DOT")
-        )
-
-        trend_df["DOT"] = (
-            trend_df["DOT"]
-            /
-            trend_df["처방 월"].map(day_dict)
-            * 1000
-        )
-
-        month_label_map = {
-            "26/01": "26년 1월",
-            "26/02": "26년 2월",
-            "26/03": "26년 3월",
-            "26/04": "26년 4월",
-            "26/05": "26년 5월",
-            "26/06": "26년 6월"
-        }
-
-        trend_df["월표시"] = trend_df["처방 월"].map(month_label_map)
-
-        trend_df = trend_df[
-            trend_df["진료과한글"].isin(top3_list)
-        ]
-
-        trend_df["진료과한글"] = pd.Categorical(
-            trend_df["진료과한글"],
-            categories=top3_list,
-            ordered=True
-        )
-
-        trend_df["처방 월"] = pd.Categorical(
-            trend_df["처방 월"],
+        class_trend["처방 월"] = pd.Categorical(
+            class_trend["처방 월"],
             categories=month_order_2026,
             ordered=True
         )
 
-        trend_df = trend_df.sort_values("처방 월")
-        top3_colors = [
-            "#82D4BB",
-            "#F6C667",
-            "#f3a6ae"
-        ]
-        color_map = {
-            dept: top3_colors[i]
-            for i, dept in enumerate(top3_list)
-        }
-
-        latest_label_month = month_order_2026[-1]
-
-        trend_df["label"] = trend_df.apply(
-            lambda row:
-                f"{row['DOT']:.1f}"
-                if row["처방 월"] == latest_label_month
-                else "",
-            axis=1
+        class_trend = class_trend.sort_values(
+            "처방 월"
         )
 
-        fig_top3 = px.line(
-            trend_df.sort_values("진료과한글"),
+        class_trend["월표시"] = (
+            class_trend["처방 월"]
+            .astype(str)
+            .map({
+                "26/01": "26년 1월",
+                "26/02": "26년 2월",
+                "26/03": "26년 3월",
+                "26/04": "26년 4월",
+                "26/05": "26년 5월",
+                "26/06": "26년 6월"
+            })
+        )
+
+        fig_class = px.bar(
+            class_trend,
             x="월표시",
             y="DOT",
-            color="진료과한글",
-            markers=True,
-            text="label",
-            color_discrete_map=color_map,
-            category_orders={
-                "월표시": [
-                    "26년 1월",
-                    "26년 2월",
-                    "26년 3월",
-                    "26년 4월",
-                    "26년 5월"
-                ]
-            }
+            text="DOT"
         )
 
-        fig_top3.update_traces(
-            textposition="top center",
+        fig_class.update_traces(
+            texttemplate="%{y:.1f}",
+            textposition="outside",
+            marker_color="#82D4BB",
+            width=0.45,
             hovertemplate=
-            "<b>%{fullData.name}</b><br>" +
+            "<b>" + str(selected_drug) + "</b><br>" +
             "처방월: %{x}<br>" +
             "항생제 사용량: %{y:.1f}<br>" +
             "<extra></extra>"
         )
 
-        fig_top3.update_layout(
-            height=350,
-            xaxis_title=None,
-            yaxis_title="항생제 사용량 (DOT/1,000 patient-days)",
-            legend_title_text="",
-            legend=dict(
-                orientation="h",
-                x=0.45,
-                xanchor="center",
-                y=-0.15),
-            margin=dict(
-                l=60,   # 기본보다 증가
-                r=20,
-                t=60,
-                b=20
+            # x축을 숫자로 변환
+        x_num = np.arange(len(class_trend))
+
+        # 선형회귀
+        coef = np.polyfit(
+            x_num,
+            class_trend["DOT"],
+            1
+        )
+
+        trend = np.poly1d(coef)
+
+        slope = coef[0]
+
+        if slope > 0:
+            trend_text = f"<b>+{slope:.2f}</b> DOT/1,000 patient-days"
+        elif slope < 0:
+            trend_text = f"<b> {slope:.2f}</b> DOT/1,000 patient-days"
+        else:
+            trend_text = f"<b>0.00</b> DOT/1,000 patient-days"
+
+        # 추세선 추가
+        fig_class.add_trace(
+            go.Scatter(
+                x=class_trend["월표시"],
+                y=trend(x_num),
+                mode="lines",
+                name="Trend",
+                showlegend=False,
+                line=dict(
+                    color="#17406D",
+                    width=2,
+                    dash="dot"
+                ),
+                hovertemplate=
+                "기울기<br>" +
+                f"{trend_text}<extra></extra>"
             )
         )
 
+        y_max = class_trend["DOT"].max() * 1.25
+
+        fig_class.update_layout(
+            height=400,
+
+            margin=dict(
+                l=60,
+                r=20,
+                t=20,
+                b=10
+            ),
+
+            xaxis_title=None,
+            yaxis_title="항생제 사용량 (DOT/1,000 patient-days)",
+            yaxis=dict(
+                range=[0, y_max]
+            ),
+            paper_bgcolor="rgba(255,255,255,0)",
+            plot_bgcolor="rgba(255,255,255,0)"
+        )
+
         st.markdown(f"""
-            <div class="column-title-box">
-                <div class="column-title">
-                    2026년 {selected_drug} 다빈도 사용 진료과 현황
-                </div>
+        <div style="margin-top:15px;">
+        <div class="column-title-box">
+            <div class="column-title">
+                📊올해의 월별 {str(selected_drug)} 사용량 추이
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
 
         st.plotly_chart(
-            fig_top3,
+            fig_class,
             use_container_width=True,
             config={"displayModeBar": False}
         )
@@ -4235,7 +4163,7 @@ elif st.session_state.menu == "ASP 중재":
 
         xaxis=dict(
 
-            range=[0,400],
+            range=[0,500],
 
             showline=True,
             linewidth=1,
@@ -4532,7 +4460,7 @@ elif st.session_state.menu == "ASP 중재":
     <!-- 이미지 -->
     <div style="
         display:flex;
-        justify-content:center;
+        flex-direction:column;
         align-items:center;
     ">
         <img src="data:image/png;base64,{restricted_base64}" style="
@@ -4554,7 +4482,7 @@ elif st.session_state.menu == "ASP 중재":
 
             st.toast("페이지를 새로고침했습니다.")
 
-elif st.session_state.menu == "ASP 전담팀":
+elif st.session_state.menu == "ASP팀 활동":
 
     @st.cache_data
     def load_image(path):
@@ -4562,7 +4490,7 @@ elif st.session_state.menu == "ASP 전담팀":
              return base64.b64encode(
                 f.read()
              ).decode()
-    team_base64 = load_image("team.png")
+    team_base64 = load_image("team1.png")
 
     st.markdown("""
     <div class="section-title-box">
@@ -4595,7 +4523,27 @@ elif st.session_state.menu == "ASP 전담팀":
 
         <div style="
             display:flex;
-            justify-content:center;
+            flex-direction:column;
+            align-items:center;
+        ">
+
+        <div style="
+            background:#dbeafe;
+            color:#17406D;
+            padding:5px 26px;
+            border-radius:18px;
+            font-size:18px;
+            font-weight:800;
+            box-shadow:0 2px 6px rgba(0,0,0,0.06);
+            border:1px solid #cfe0f5;
+            margin-bottom:18px;
+        ">
+            2차년도 ASP 전담팀
+        </div>
+
+        <div style="
+            display:flex;
+            flex-direction:column;
             align-items:center;
         ">
             <img src="data:image/png;base64,{team_base64}" style="
@@ -4617,14 +4565,14 @@ elif st.session_state.menu == "ASP 전담팀":
         <div style="
             background:white;
             border-radius:28px;
-            padding:28px;
+            padding:28px 28px 19px 28px;
             box-shadow:0 2px 10px rgba(0,0,0,0.08);
-            margin-bottom:24px;
+            margin-bottom:14px;
         ">
 
         <div style="
             display:flex;
-            gap:24px;
+            gap:8px;
             align-items:flex-start;
         ">
 
@@ -4638,19 +4586,21 @@ elif st.session_state.menu == "ASP 전담팀":
 
         <div style="
             display:flex;
-            justify-content:center;
+            flex-direction:column;
+            align-items:center;
             margin-bottom:18px;
         ">
 
         <div style="
             background:#dbeafe;
             color:#17406D;
-            padding:10px 26px;
+            padding:5px 26px;
             border-radius:18px;
             font-size:18px;
             font-weight:800;
             box-shadow:0 2px 6px rgba(0,0,0,0.06);
             border:1px solid #cfe0f5;
+            margin-bottom:18px;
         ">
             의사 / 약사 현황
         </div>
@@ -4662,7 +4612,7 @@ elif st.session_state.menu == "ASP 전담팀":
             border-collapse:collapse;
             text-align:center;
             overflow:hidden;
-            border-radius:4px;
+            border-radius:8px;
         ">
 
         <tr style="
@@ -4696,19 +4646,21 @@ elif st.session_state.menu == "ASP 전담팀":
 
         <div style="
             display:flex;
-            justify-content:center;
+            flex-direction:column;
+            align-items:center;
             margin-bottom:18px;
         ">
 
         <div style="
             background:#dbeafe;
             color:#17406D;
-            padding:10px 26px;
+            padding:5px 26px;
             border-radius:18px;
             font-size:18px;
             font-weight:800;
             box-shadow:0 2px 6px rgba(0,0,0,0.06);
             border:1px solid #cfe0f5;
+            margin-bottom:18px;
         ">
             다학제 인력 현황
         </div>
@@ -4720,7 +4672,7 @@ elif st.session_state.menu == "ASP 전담팀":
             border-collapse:collapse;
             text-align:center;
             overflow:hidden;
-            border-radius:4px;
+            border-radius:8px;
         ">
 
         <tr style="
@@ -4737,6 +4689,7 @@ elif st.session_state.menu == "ASP 전담팀":
         <tr><td style="padding:10px;">전산정보팀</td><td>홍성규</td></tr>
         <tr><td style="padding:10px;">감염관리실</td><td>박세정</td></tr>
         <tr><td style="padding:10px;">기획팀</td><td>김지영</td></tr>
+        <tr><td style="padding:10px;">진단검사의학팀</td><td>김지우</td></tr>
 
         </table>
 
@@ -4747,10 +4700,248 @@ elif st.session_state.menu == "ASP 전담팀":
         </div>
         """, unsafe_allow_html=True)
 
+    st.markdown(
+        """
+    <div class="section-title-box">
+        <div class="section-title-text">ASP 전담팀 연도별 활동 내역</div>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    timeline_css = """
+    <style>
+    /* 카드 전체 영역 - 스크롤 숨김 및 내부 여백 확보 */
+    .timeline-card {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 30px 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        margin-bottom: 40px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden; /* 스크롤 완전히 방지 */
+    }
+
+    .timeline-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: #0d4da2;
+        margin-bottom: 10px;
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 10px;
+    }
+
+    /* 컨테이너 상하 여백을 높여 위쪽 박스가 바깥으로 나가는 것 방지 */
+    .timeline-container {
+        position: relative;
+        display: flex;
+        justify-content: space-between; /* 5개가 화면에 균등 배치되도록 설정 */
+        align-items: center;
+        padding: 300px 10px; /* 상하 여백 300px로 확대하여 위/아래 공간 확보 */
+        margin: 10px 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* 가로 중심선 */
+    .timeline-line {
+        position: absolute;
+        top: 50%;
+        left: 20px;
+        right: 20px;
+        height: 4px;
+        background: #2563eb;
+        z-index: 1;
+        transform: translateY(-50%);
+    }
+
+    /* 각 아이템 너비 - 5개가 한 화면에 쏙 들어가도록 170px 설정 */
+    .timeline-item {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 300px;
+    }
+
+    /* 중앙 파란선 위 동그라미 */
+    .timeline-dot {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 20px;
+        background: #ffffff;
+        border: 4px solid #2563eb;
+        border-radius: 50%;
+        z-index: 4;
+        box-shadow: 0 0 6px rgba(0,0,0,0.15);
+    }
+
+    /* --- 기본 월 태그 스타일 (공통) --- */
+    .timeline-month {
+        position: absolute;
+        /* 수평 중앙 정렬 유지 */
+        left: 50%;
+        transform: translateX(-50%);
+        
+        /* 기존 스타일 유지 */
+        font-weight: 800;
+        font-size: 16px;
+        color: #1e3a8a;
+        background: #eff6ff;
+        padding: 3px 12px;
+        border-radius: 12px;
+        border: 1px solid #bfdbfe;
+        white-space: nowrap;
+        z-index: 5;
+        
+        /* 위치 변경 시 부드러운 전환 효과 (선택사항) */
+        transition: top 0.3s ease;
+    }
+
+    /* --- [핵심] 위치 조건부 설정 --- */
+
+    /* Case 1: 컨텐츠 카드가 위에(.top) 있을 때 -> 월 태그는 동그라미 아래에 배치 */
+    /* 동그라미 중심(50%)에서 아래로 16px 이격 */
+    .timeline-content.top + .timeline-month {
+        top: calc(50% + 16px); 
+    }
+
+    /* Case 2: 컨텐츠 카드가 아래에(.bottom) 있을 때 -> 월 태그는 동그라미 위에 배치 */
+    /* 동그라미 중심(50%)에서 위로 월 태그 높이(약 30px) + 이격(16px) 만큼 차감 */
+    /* 계산값: -(30 + 16) = -46px */
+    .timeline-content.bottom + .timeline-month {
+        top: calc(50% - 46px);
+    }
+
+    /* 콘텐츠 카드 너비 및 위치 고정 */
+    .timeline-content {
+        position: absolute;
+        width: 250px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 12px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        z-index: 3;
+        box-sizing: border-box;
+    }
+
+    /* 위쪽 배치 카드 (중앙선에서 위로 75px 떨어짐) */
+    .timeline-content.top {
+        bottom: 50px;
+    }
+
+    /* 아래쪽 배치 카드 (중앙선에서 아래로 75px 떨어짐) */
+    .timeline-content.bottom {
+        top: 50px;
+    }
+
+    /* 수직 연결선 - 길이와 위치 완벽 보정 (75px) */
+    .timeline-content.top::after {
+        content: '';
+        position: absolute;
+        bottom: -50px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 50px;
+        background: #2563eb;
+    }
+
+    .timeline-content.bottom::before {
+        content: '';
+        position: absolute;
+        top: -50px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 50px;
+        background: #2563eb;
+    }
+
+    /* 이미지 높이 (110px로 알맞게 조정) */
+    .timeline-img {
+        width: 100%;
+        height: 170px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        background-color: #f1f5f9;
+    }
+
+    /* 텍스트 크기 */
+    .timeline-desc {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1.3;
+    }
+
+    .timeline-subdesc {
+        font-size: 14px;
+        color: #64748b;
+        margin-top: 4px;
+    }
+    </style>
+    """
+    st.markdown(timeline_css, unsafe_allow_html=True) 
+
+    # 이미지를 base64로 변환해주는 helper 함수
+    def get_img_base64(filepath):
+        try:
+            with open(filepath, "rb") as f:
+                return f"data:image/jpeg;base64,{base64.b64encode(f.read()).decode()}"
+        except:
+            # 파일이 없을 시 보여줄 더미 이미지
+            return "https://via.placeholder.com/300x200?text=No+Image"
+
+    # 타임라인 데이터 구성 (사진 파일명 및 설명 수정)
+    years_data = {
+        "1차년도 (2024년 11월 ~ 2025년 12월)": [
+            {"month": "24년 11월", "pos": "top", "img": get_img_base64("2411 출범.jpg"), "title": "ASP 전담팀 출범", "sub": "인원 구성 및 사업 계획 수립"},
+            {"month": "25년 2월", "pos": "bottom", "img": get_img_base64("2503 전산.jpg"), "title": "ASP 친화적 전산 시스템 개발", "sub": "원내 모니터링 구축"},
+            {"month": "25년 7월", "pos": "top", "img": get_img_base64("2507 교육.jpg"), "title": "항생제 적정사용 교육", "sub": "직원 대상 ASP 중요성 인식 제고"},
+            {"month": "25년 11월", "pos": "bottom", "img": get_img_base64("2511 전공의.jpg"), "title": "항생제 사용지침 교육", "sub": "전공의 대상 항생제 가이드라인 교육"},
+            {"month": "25년 12월", "pos": "top", "img": get_img_base64("2512보고.jpg"), "title": "1차년도 결과보고", "sub": "사업 최종 성과 검토 및 결과 보고"}
+        ],
+        "2차년도 (2026년)": [
+            {"month": "26년 1월", "pos": "top", "img": get_img_base64("2601출범.jpg"), "title": "2차년도 ASP 전담팀 구성", "sub": "인력 보강으로 사업 확장 계획 수립"},
+            {"month": "26년 5월", "pos": "bottom", "img": get_img_base64("2605 세미나.jpg"), "title": "ASP 네트워크 세미나 참석", "sub": "타 기관 사업 현황 벤치마킹"},
+            {"month": "26년 6월", "pos": "top", "img": get_img_base64("2606리포트.jpg"), "title": "ASP 리포트 도입", "sub": "ASP팀과 진료과의 소통 체계 구축"},
+            {"month": "26년 7월", "pos": "bottom", "img": get_img_base64("2607 지침.jpg"), "title": "항생제 사용지침 개정", "sub": "본원 진료 현장에 적합한 지침서 제작"}
+        ]
+    }
+
+        # 차년도별 렌더링
+    for year_title, events in years_data.items():
+        items_html = "".join(
+            [
+                f'''<div class="timeline-item">
+                    <div class="timeline-content {ev["pos"]}">
+                        <img src="{ev["img"]}" class="timeline-img">
+                        <div class="timeline-desc">{ev["title"]}</div>
+                        <div class="timeline-subdesc">{ev["sub"]}</div>
+                    </div>
+                    <div class="timeline-month">{ev["month"]}</div>
+                    <div class="timeline-dot"></div>
+                </div>'''
+                for ev in events
+            ]
+        )
+
+        full_html = f'<div class="timeline-card"><div class="timeline-title">🗓️ {year_title}</div><div class="timeline-container"><div class="timeline-line"></div>{items_html}</div></div>'
+
+        st.markdown(full_html, unsafe_allow_html=True)
+        
     st.markdown("""
     <div class="section-title-box">
         <div class="section-title-text">
-            ASP 전담팀 활동 PLAN
+            ASP 전담팀 이후 활동 PLAN
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -4793,7 +4984,7 @@ elif st.session_state.menu == "ASP 전담팀":
         font-weight:700;
         color:#1f2937;
     ">
-        원내 항생제 사용 지침 개정
+        진료 지원 편의성 증대를 위한 AI 기반 항생제 사용 가이드 챗봇 개발
     </div>
     </div>
 
@@ -4895,7 +5086,7 @@ elif st.session_state.menu == "ASP 전담팀":
         font-weight:700;
         color:#1f2937;
     ">
-        진료 지원 편의성 증대를 위한 AI 기반 항생제 사용 가이드 챗봇 개발
+        3세대 세팔로스포린(Cephalosporin) 계열 항생제 장기 처방에 대한 집중 중재
     </div>
     </div>
 
@@ -4935,37 +5126,6 @@ elif st.session_state.menu == "ASP 전담팀":
 
     <!-- 5 -->
     <div style="display:flex; gap:16px; margin-bottom:18px;">
-    <div style="
-        width:70px;
-        min-width:70px;
-        height:70px;
-        background:#eef2f8;
-        border-radius:14px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:34px;
-        font-weight:900;
-        color:#3b82f6;
-    ">
-        6
-    </div>
-
-    <div style="
-        flex:1;
-        height:70px;
-        background:#eef2f8;
-        border-radius:14px;
-        display:flex;
-        align-items:center;
-        padding-left:28px;
-        font-size:22px;
-        font-weight:700;
-        color:#1f2937;
-    ">
-        3세대 세팔로스포린(Cephalosporin) 계열 항생제 장기 처방에 대한 집중 중재
-    </div>
-    </div>
 
     </div>
 
