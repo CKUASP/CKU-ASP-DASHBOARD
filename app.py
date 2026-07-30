@@ -457,7 +457,7 @@ div[data-testid="stToolbar"] {
 }
 /* select 전체 */
 /* 1. Selectbox 최외각 컨테이너 */
-div[data-testid="stSelectbox"] div[data-baseweb="select"] {
+div[data-testid="stSelectbox"] > div:nth-child(2) {
     border-radius: 12px !important;
     border: 2px solid #17406D !important; /* 선명한 네이비 테두리 강제 적용 */
     background-color: #ffffff !important;  /* 깔끔한 흰색 배경 */
@@ -476,13 +476,13 @@ div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
 }
 
 /* 3. Input 텍스트 영역 */
-div[data-testid="stSelectbox"] div[data-baseweb="select"] input {
+div[data-testid="stSelectbox"] input {
     background: transparent !important;
     caret-color: transparent !important;
 }
 
 /* 4. 마우스 Hover 시 (테두리 색상 및 진함 강화) */
-div[data-testid="stSelectbox"] div[data-baseweb="select"]:hover {
+div[data-testid="stSelectbox"] > div:nth-child(2):hover {
     border-color: #0d2847 !important; /* 더 짙은 진한 파란색으로 강조 */
     box-shadow: 0 4px 10px rgba(23, 64, 109, 0.25) !important;
 }
@@ -496,7 +496,7 @@ div[data-testid="stSelectbox"] div[data-baseweb="select"]:active {
 }
 
 /* 6. 불필요한 포커스 링 완전 제거 */
-div[data-testid="stSelectbox"] div[data-baseweb="select"]:focus-within {
+div[data-testid="stSelectbox"] *:focus {
     outline: none !important;
     box-shadow: none !important;
 }
