@@ -4,4 +4,3 @@ plotly
 openpyxl
 pyxlsb
 streamlit-modal
-streamlit==1.40.2
