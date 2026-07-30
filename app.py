@@ -457,8 +457,9 @@ div[data-testid="stToolbar"] {
 }
 /* select 전체 */
 /* 1. Selectbox 최외각 컨테이너 */
-div[data-testid="stSelectbox"]:has(input[role="combobox"]) div[data-baseweb="select"] {
+div[data-testid="stSelectbox"] {
     border-radius: 12px !important;
+    padding: 16px;
     border: 2px solid #17406D !important; /* 선명한 네이비 테두리 강제 적용 */
     background-color: #ffffff !important;  /* 깔끔한 흰색 배경 */
     box-shadow: 0 2px 6px rgba(23, 64, 109, 0.12) !important;
@@ -467,7 +468,7 @@ div[data-testid="stSelectbox"]:has(input[role="combobox"]) div[data-baseweb="sel
 }
 
 /* 2. 내부 자식 div (BaseWeb 내부 테두리 및 배경 덮어쓰기 방지) */
-div[data-testid="stSelectbox"]:has(input[role="combobox"]) div[data-baseweb="select"] > div {
+div[data-testid="stSelectbox"] > div {
     border: none !important;              /* 자식 요쇼의 테두리를 지워 부모 테두리가 보이게 함 */
     background: transparent !important;   /* 배경을 투명하게 설정 */
     min-height: 44px;
@@ -476,23 +477,28 @@ div[data-testid="stSelectbox"]:has(input[role="combobox"]) div[data-baseweb="sel
 }
 
 /* 3. Input 텍스트 영역 */
-div[data-testid="stSelectbox"]:has(input[role="combobox"]) input {
+div[data-testid="stSelectbox"] input {
     background: transparent !important;
     caret-color: transparent !important;
 }
 
 /* 4. 마우스 Hover 시 (테두리 색상 및 진함 강화) */
-div[data-testid="stSelectbox"]:has(input[role="combobox"]) div[data-baseweb="select"] :hover {
+div[data-testid="stSelectbox"] :hover {
     border-color: #0d2847 !important; /* 더 짙은 진한 파란색으로 강조 */
-    box-shadow: 0 4px 10px rgba(23, 64, 109, 0.25) !important;
 }
 
 /* 5. 클릭(Focus/Active) 및 내부 선택 시 */
-div[data-testid="stSelectbox"]:has(input[role="combobox"]) div[data-baseweb="select"] :focus-within,
-div[data-testid="stSelectbox"]:has(input[role="combobox"]) div[data-baseweb="select"] :active {
+div[data-testid="stSelectbox"] :focus-within,
+div[data-testid="stSelectbox"] :active {
     border-color: #2563eb !important; /* 포커스 시 또렷한 파란색 포인트 */
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important; /* 파란색 그림자 라인 */
     outline: none !important;
+}
+
+/* 6. 불필요한 포커스 링 완전 제거 */
+div[data-testid="stSelectbox"] :focus-within {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 
@@ -2503,13 +2509,12 @@ elif st.session_state.menu == "항생제 사용량":
             # =========================
     # Cephamycin vs 3세대 Cephalosporins
     # =========================
-
+    
 
     selected_dept = st.selectbox(
-    "계열 선택",
-    ["전체"] + dept_list1
-)
-
+        "계열 선택",
+        ["전체"] + dept_list1
+    )
 
     if selected_dept != "전체":
         filtered_df = df[df["분류"] == selected_dept]
