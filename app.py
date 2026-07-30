@@ -7,6 +7,7 @@ import base64
 import random
 import smtplib
 import numpy as np
+from plotly.subplots import make_subplots
 from email.mime.text import MIMEText
 
 # 페이지 설정
@@ -455,82 +456,51 @@ div[data-testid="stToolbar"] {
     margin-top: 12px;
 }
 /* select 전체 */
+/* 1. Selectbox 최외각 컨테이너 */
 div[data-baseweb="select"] {
-
-    border-radius: 16px !important;
-
-    overflow: hidden;
-
-    border: 2px solid #17406D;
-
-    background: #e5e7eb;
-
-    box-shadow: 0 3px 8px rgba(23,64,109,0.15);
+    border-radius: 12px !important;
+    border: 2px solid #17406D !important; /* 선명한 네이비 테두리 강제 적용 */
+    background-color: #ffffff !important;  /* 깔끔한 흰색 배경 */
+    box-shadow: 0 2px 6px rgba(23, 64, 109, 0.12) !important;
+    overflow: hidden !important;
+    transition: all 0.2s ease-in-out;
 }
 
-/* 내부 wrapper */
+/* 2. 내부 자식 div (BaseWeb 내부 테두리 및 배경 덮어쓰기 방지) */
 div[data-baseweb="select"] > div {
-
-    border-radius: 16px !important;
-
-    background: #f3f4f6 !important;
-
-    min-height: 48px;
-
+    border: none !important;              /* 자식 요쇼의 테두리를 지워 부모 테두리가 보이게 함 */
+    background: transparent !important;   /* 배경을 투명하게 설정 */
+    min-height: 44px;
     display: flex;
-
     align-items: center;
 }
 
-/* input 영역 */
+/* 3. Input 텍스트 영역 */
 div[data-baseweb="select"] input {
-
-    background: #f3f4f6 !important;
-
-    border-radius: 16px !important;
-
+    background: transparent !important;
     caret-color: transparent !important;
-
-    padding-top: 2px;
 }
 
-/* hover */
+/* 4. 마우스 Hover 시 (테두리 색상 및 진함 강화) */
 div[data-baseweb="select"]:hover {
-
-    border-color: #bfc7d1;
-
-    transition: 0.2s;
+    border-color: #0d2847 !important; /* 더 짙은 진한 파란색으로 강조 */
+    box-shadow: 0 4px 10px rgba(23, 64, 109, 0.25) !important;
 }
 
-/* focus 제거 */
-div[data-baseweb="select"] *:focus {
-
-    outline: none !important;
-
-    box-shadow: none !important;
-
-    border-color: #bcc8d6 !important;
-}
-/* 클릭 시 빨간 테두리 제거 */
-div[data-baseweb="select"]:focus,
+/* 5. 클릭(Focus/Active) 및 내부 선택 시 */
 div[data-baseweb="select"]:focus-within,
-div[data-baseweb="select"] > div:focus,
-div[data-baseweb="select"] > div:focus-within {
-
+div[data-baseweb="select"]:active {
+    border-color: #2563eb !important; /* 포커스 시 또렷한 파란색 포인트 */
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important; /* 파란색 그림자 라인 */
     outline: none !important;
-
-    box-shadow: 0 3px 8px rgba(23,64,109,0.15);
-
-    border-color: #17406D !important;
 }
 
-/* 내부 input focus 제거 */
-div[data-baseweb="select"] input:focus {
-
+/* 6. 불필요한 포커스 링 완전 제거 */
+div[data-baseweb="select"] *:focus {
     outline: none !important;
-
     box-shadow: none !important;
 }
+
 
 /* 하단 섹션 제목 박스 */
 .section-title-box {
@@ -782,6 +752,30 @@ div[data-testid="stSpinner"].stCacheSpinner {
     padding-left:12px;
 }
 
+.notice-table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+.notice-table th{
+    background:#eef5ff;
+    color:#17406D;
+    padding:10px;
+    text-align:center;
+    border:1px solid #d7e3f4;
+}
+
+.notice-table td{
+    padding:10px;
+    border:1px solid #e8edf5;
+    text-align:center;
+}
+
+.notice-table tbody tr:hover{
+    background:#f8fbff;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -825,7 +819,7 @@ if "menu" not in st.session_state:
 if "abx_loaded" not in st.session_state:
     st.session_state.abx_loaded = False
 
-sp1, center, sp2 = st.columns([1, 3, 1])
+sp1, center, sp2 = st.columns([1, 4, 1])
 
 with center:
 
@@ -837,7 +831,7 @@ with center:
     }
     /* 버튼 전체 */
     div.stButton > button {
-        font-size:24px !important;
+        font-size:23px !important;
         font-weight:700 !important;
         height:70px !important;
         border-radius:16px !important;
@@ -959,6 +953,7 @@ if st.session_state.menu == "안내사항":
         display:flex;
         align-items:center;
         gap:40px;
+        margin-bottom:20px;
     ">
 
     <div style="flex:1.4;">
@@ -1018,6 +1013,279 @@ if st.session_state.menu == "안내사항":
 
     </div>
     """, unsafe_allow_html=True)
+
+
+    st.markdown("""
+    <div class="section-title-box">
+        <div class="section-title-text">
+            항생제 관련 안내사항
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+    if "notice_tab" not in st.session_state:
+        st.session_state.notice_tab = "신약"
+
+    st.markdown("""
+    <style>
+
+    /* 게시판 카드 */
+    .notice-board{
+        background:white;
+        border-radius:28px;
+        padding:28px;
+        box-shadow:0 2px 10px rgba(0,0,0,0.08);
+        border:1px solid #e5edf7;
+        margin-bottom:20px;
+    }
+
+    /* 내용 제목 */
+    .notice-title{
+        font-size:26px;
+        font-weight:800;
+        color:#17406D;
+        margin-bottom:16px;
+    }
+
+    /* 내용 */
+    .notice-content{
+        background:#f8fbff;
+        border-radius:18px;
+        padding:22px;
+        font-size:18px;
+        line-height:1.9;
+        color:#444;
+        border:1px solid #dbe7f5;
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+
+    sp3, sp4, sp5 = st.columns([1, 4, 1])
+
+    with sp4:
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.button(
+                "🆕 항생제 신약 정보",
+                use_container_width=True,
+                type="secondary" if st.session_state.notice_tab=="신약" else "primary",
+                on_click=lambda: st.session_state.update(notice_tab="신약")
+            )
+
+        with col2:
+            st.button(
+                "📦 항생제 품절 정보",
+                use_container_width=True,
+                type="secondary" if st.session_state.notice_tab=="품절" else "primary",
+                on_click=lambda: st.session_state.update(notice_tab="품절")
+            )
+
+        with col3:
+            st.button(
+                "📄 항생제 허가사항 변경",
+                use_container_width=True,
+                type="secondary" if st.session_state.notice_tab=="허가" else "primary",
+                on_click=lambda: st.session_state.update(notice_tab="허가")
+            )
+
+        # --------------------
+        # 내용
+        # --------------------
+
+    def get_base64_image(image_path):
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+
+    aug_base64 = get_base64_image("aug.png")
+    gem_base64 = get_base64_image("gem.png")
+    com_base64 = get_base64_image("com.png") # 1 | 병합(중복)
+
+    if st.session_state.notice_tab == "신약":
+
+        st.markdown(f"""
+        <div class="notice-board">
+            <div class="notice-title">
+            🆕 항생제 신약 정보
+            </div>
+            <div class="notice-content">
+            <p><b>1) 2026년도 1분기 항생제 신약</b></p>
+            <table class="notice-table">
+            <thead>
+            <tr>
+                <th> </th>
+                <th>항목명</th>
+                <th>코드명</th>
+                <th>성분명</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    <img
+                        src="data:image/png;base64,{aug_base64}"
+                        style="
+                            width:160px;
+                            border-radius:10px;
+                        "> 
+                </td>
+                <td><b>크라목신 주 600MG</b></td>
+                <td>W-AUG6J</td>
+                <td>Amoxicillin/clavulanate</td>
+            </tr>
+                        <tr>
+                <td>
+                    <img
+                        src="data:image/png;base64,{gem_base64}"
+                        style="
+                            width:160px;
+                            border-radius:10px;
+                        "> 
+                </td>
+                <td><b>팩티브 정 320MG</b></td>
+                <td>W-GMF320</td>
+                <td>Gemifloxacin</td>
+            </tr>
+            </tbody>
+            </table>
+            <p><b>2) 2025년도 하반기 항생제 신약</b></p>
+            <table class="notice-table">
+            <thead>
+            <tr>
+                <th> </th>
+                <th>항목명</th>
+                <th>코드명</th>
+                <th>성분명</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    <img
+                        src="data:image/png;base64,{com_base64}"
+                        style="
+                            width:160px;
+                            border-radius:10px;
+                        "> 
+                </td>
+                <td><b>콤비신 주 4.5G</b></td>
+                <td>W-PSB4GJ</td>
+                <td>Piperacillin/Sulbactam</td>
+            </tr>
+            </tbody>
+            </table>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    elif st.session_state.notice_tab == "품절":
+
+        st.markdown(f"""
+        <div class="notice-board">   
+            <div class="notice-title">
+            📦 항생제 품절 정보
+            </div>
+            <div class="notice-content">
+            <p><b>1) 현재 품절 중인 항생제</b></p>
+            <table class="notice-table">
+            <thead>
+            <tr>
+                <th>항목명</th>
+                <th>코드명</th>
+                <th>성분명</th>
+                <th>품절 기한</th>
+                <th>대체 약품</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><b>칸시다스 주 70MG</b></td>
+                <td>CSF70J</td>
+                <td>Caspofungin</td>
+                <td><b>26/08/31</b></td>
+                <td><b>동일성분, 동일계열 대체 약품 없음</b></td>
+            </tr>
+            <tr>
+                <td><b>오큐프록스 안연고</b></td>
+                <td>O-OFLOC</td>
+                <td>Ofloxacin</td>
+                <td><b>생산 중단</b></td>
+                <td>동일 성분 <b>퀴노비드 안연고</b> 입고 예정</td>
+            </tr>
+            </tbody>
+            </table>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    else:
+
+        st.markdown(f"""
+        <div class="notice-board"> 
+            <div class="notice-title">
+            📄 항생제 허가사항 변경
+            </div>
+            <div class="notice-content">
+            <p><b>1) 허가사항 변경명령 알림</b></p>
+            <table class="notice-table">
+            <thead>
+            <tr>
+                <th>성분명</th>
+                <th>본원 해당 약품</th>
+                <th>변경 항목</th>
+                <th>변경 내용</th>
+                <th>반영 일자</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><b>Ampicillin/Sulbactam</b></td>
+                <td>박타신 주 750MG</td>
+                <td>이상반응</td>
+                <td style="text-align:left;"><b><신설></b><br>호산구 증가 및 전산 증상 동반 약물 반응(DRESS)</td>
+                <td>26/08/18</td>
+            </tr>
+            <tr>
+                <td><b>Minocycline</b></td>
+                <td>미노씬 캡슐 50MG</td>
+                <td>이상반응</td>
+                <td style="text-align:left;"><b><변경></b><br>가성뇌종양(양성두개내고혈압)<br>▶ 가성뇌종양(특발성 두개 내압 항진증)
+                <br><b><신설></b><br>1. 투약을 중단하면 대개 증상이 해소되지만<br>영구적으로 시력이 손상될 가능성도 있으므로...<br>2. 약물 투여를 중단하더라도<br>두개 내압 상승이 수주 동안 지속될 수 있으므로...</td>
+                <td>26/08/18</td>
+            </tr>
+            <tr>
+                <td><b>Tigecycline</b></td>
+                <td>타이가실 주 50MG</td>
+                <td>이상반응</td>
+                <td style="text-align:left;"><b><신설></b><br>테트라사이클린계 항생제와<br> 유사한 이상반응을 보일 수 있다.</td>
+                <td>26/09/16</td>
+            </tr>
+            <tr>
+                <td><b>Cefixime</b></td>
+                <td>슈프락스 캅셀 100MG<br>슈프락스 산 50MG/G</td>
+                <td>이상반응</td>
+                <td style="text-align:left;"><b><신설></b><br>뇌병증</td>
+                <td>26/09/16</td>
+            </tr>
+            <tr>
+                <td><b>Meropenem</b></td>
+                <td>메바페넴 주 1G<br>메바페넴 주 500MG</td>
+                <td>이상반응</td>
+                <td style="text-align:left;"><b><변경></b><br>간부전 ▶ 약물-유발 간 손상(간염 및 간부전 포함)
+                <br><b><신설></b><br>중증 약물 유발 간 손상이 발생한 경우,<br> 투여 중단을 고려해야 하며 치료에 필수적인 것으로<br> 평가될 경우에만 투여를 재개해야 한다.</td>
+                <td>26/10/16</td>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
 
 elif st.session_state.menu == "항생제 사용량":
 
@@ -1656,7 +1924,6 @@ elif st.session_state.menu == "항생제 사용량":
         </div>
         """, unsafe_allow_html=True)
 
-
     st.markdown(f"""
     <div style="
         background:#f1f7fe;
@@ -1710,7 +1977,7 @@ elif st.session_state.menu == "항생제 사용량":
         color:#1d4ed8;
         margin-bottom:12px;
     ">
-        DOT (Days Of Therapy)의 정의
+        DOT (Days of Therapy)의 정의
     </div>
 
     <div style="
@@ -4016,65 +4283,49 @@ elif st.session_state.menu == "ASP 중재":
     # =========================
 
     # 월 변환 함수
+
+
     def convert_month_label(month_text):
-
         year = "20" + month_text[:2]
-
         month = month_text[-2:]
-
         return f"{year}년 {int(month)}월"
 
+
     # 월 리스트
-    month_list = (
-        df_inter_data["월"]
-        .dropna()
-        .unique()
-        .tolist()
-    )
+    month_list = df_inter_data["월"].dropna().unique().tolist()
 
     # 최신순 정렬
-    month_list = sorted(
-        month_list,
-        reverse=True
-    )
+    month_list = sorted(month_list, reverse=True)
 
     # 표시용 dictionary
-    month_display_map = {
-        m: convert_month_label(m)
-        for m in month_list
-    }
+    month_display_map = {m: convert_month_label(m) for m in month_list}
 
     # 선택창
     selected_month = st.selectbox(
-
         "월별 현황",
-
         month_list,
-
-        index=0,    
-
-        format_func=lambda x:
-            month_display_map[x]
+        index=0,
+        format_func=lambda x: month_display_map[x],
     )
-    st.markdown("""
-    <div class="chart-title-box">
-    <div class="chart-title">
-        📊 중재활동 항목 별 중재 현황
-    </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="chart-title-box">
+        <div class="chart-title">
+            📊 중재활동 항목별 중재 현황
+        </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     # =========================
     # 선택 월 데이터
     # =========================
 
-    selected_row = df_inter_data[
-        df_inter_data["월"] == selected_month
-    ].iloc[0]
+    selected_row = df_inter_data[df_inter_data["월"] == selected_month].iloc[0]
 
     # 그래프 데이터
     category_df = pd.DataFrame({
-
         "항목": [
             "1.항생제 병합(중복) 처방 중재",
             "2.항생제 장기투여 중재",
@@ -4082,136 +4333,422 @@ elif st.session_state.menu == "ASP 중재":
             "4.항생제 하강 치료",
             "5.미생물 검사 기반의 항생제 처방 중재",
             "6.가이드라인에 맞는 항생제 처방",
-            "7.특정 항생제에 대한 치료 약물 모니터링"
+            "7.특정 항생제에 대한 치료 약물 모니터링",
         ],
-
         "건수": [
-
             selected_row["중복"],
             selected_row["장기"],
             selected_row["경구"],
             selected_row["하강"],
             selected_row["미생물"],
             selected_row["지침"],
-            selected_row["농도"]
-        ]
+            selected_row["농도"],
+        ],
     })
 
     # =========================
-    # 가로 막대 그래프
+    # Bar of Pie (도넛 + 서브 막대) 그래프
     # =========================
 
-    fig_category = px.bar(
+    # 1~4번 기타 항목과 5~7번 메인 항목 데이터 분리
+    sub_items = [
+        "1.항생제 병합(중복) 처방 중재",
+        "2.항생제 장기투여 중재",
+        "3.주사 항생제의 경구 전환",
+        "4.항생제 하강 치료",
+    ]
 
-        category_df,
+    sub_df = category_df[category_df["항목"].isin(sub_items)].copy()
+    main_df = category_df[~category_df["항목"].isin(sub_items)].copy()
 
-        x="건수",
+    sub_df["항목"] = sub_df["항목"].str.replace(".", " | ", regex=False)
 
-        y="항목",
+    # 기타 항목(1~4번) 건수 합계
+    other_sum = sub_df["건수"].sum()
 
-        orientation="h",
+    main_values = [other_sum] + main_df["건수"].tolist()
 
-        text="건수",
+    # 메인 도넛 차트용 라벨/값 데이터
+    pie_text_labels = ["1~4","5", "6", "7"]
 
-        color="항목",
+    # 2. 하단 범례(Legend)에 표시할 범례 텍스트
+    pie_legend_labels = [
+        "1~4",
+        "5 | 미생물 검사 기반의 항생제 처방 중재",
+        "6 | 가이드라인에 맞는 항생제 처방",
+        "7 | 특정 항생제에 대한 치료 약물 모니터링",
+    ]
 
-        color_discrete_sequence=[
-            "#F4A7A7",  # 빨강
-            "#F8C89A",  # 주황
-            "#F7E7A9",  # 노랑
-            "#BFDDB5",  # 초록
-            "#AFCBFF",  # 파랑
-            "#BFC4F5",  # 남색
-            "#D8B4F8"   # 보라
-        ],
+    # 지정하신 파스텔 컬러 유지
+    main_colors = [
+        "#AFCBFF",
+        "#F8C89A",
+        "#F4A7A7",
+        "#BFDDB5",
+    ]  # 5번(파랑), 6번(남색), 7번(보라), 기타(회색)
+    sub_colors = [
+        "#a7c7ff",
+        "#BFC4F5",
+        "#D8B4F8",
+        "#CBD5E1",
+    ]  # 1번(빨강), 2번(주황), 3번(노랑), 4번(초록)
 
-        category_orders={
-            "항목": [
-                "1.항생제 병합(중복) 처방 중재",
-                "2.항생제 장기투여 중재",
-                "3.주사 항생제의 경구 전환",
-                "4.항생제 하강 치료",
-                "5.미생물 검사 기반의 항생제 처방 중재",
-                "6.가이드라인에 맞는 항생제 처방",
-                "7.특정 항생제에 대한 치료 약물 모니터링"
-            ]
-        }
+    # 서브플롯 생성 (1행 2열)
+    fig_category = make_subplots(
+        rows=1,
+        cols=2,
+        specs=[[{"type": "domain"}, {"type": "xy"}]],
+        column_widths=[0.6, 0.4],
+        horizontal_spacing=0.18,
+        subplot_titles=("<b>전체 항목 중재 건수</b>", "<b>1~4번 항목 중재 건수</b>"),
     )
 
-
-    # 스타일
-    fig_category.update_traces(
-        width=0.32,
-
-        texttemplate='%{text:,.0f}',
-
-        textposition='outside',
-
-        marker_line_color='rgba(0,0,0,0.18)',
-
-        marker_line_width=1.5,
-
-        opacity=0.95
+    # [왼쪽] 메인 도넛 차트
+    fig_category.add_trace(
+        go.Pie(
+            labels=pie_legend_labels,  # 하단 범례용 텍스트
+            values=main_values,
+            text=pie_text_labels,  # 파이 상에 보일 번호 (1~4, 5, 6, 7)
+            texttemplate="%{text} | <b>%{value}</b> <br>%{percent}",  # "번호 (퍼센트)" 만 표시
+            textposition="inside",
+            insidetextorientation="horizontal",
+            insidetextfont=dict(
+                size=16,  # 글자 크기 (기본값 약 12 -> 16~18 정도로 키움)
+                color="#595959",  # 글자 색상 (필요시 '#000000' 등으로 변경)
+            ),
+            marker=dict(
+                colors=main_colors, line=dict(color="rgba(0,0,0,0.18)", width=1.5)
+            ),
+            hovertemplate="<b>%{label}</b><br>건수: %{value}건 (%{percent})<extra></extra>",
+            showlegend=True,
+            sort=False,
+        ),
+        row=1,
+        col=1,
     )
 
-    # 레이아웃
+    # [오른쪽] 소수 항목 가로 막대 차트
+    fig_category.add_trace(
+        go.Bar(
+            x=sub_df["건수"],
+            y=sub_df["항목"],
+            orientation="h",
+            text=sub_df["건수"],
+            texttemplate="%{text:,.0f}",
+            textposition="outside",
+            marker=dict(
+                color=sub_colors, line=dict(color="rgba(0,0,0,0.18)", width=1.5)
+            ),
+            width=0.35,
+            opacity=0.95,
+            hovertemplate="<b>%{y}</b><br>건수: %{x}건<extra></extra>",
+            showlegend=False,
+        ),
+        row=1,
+        col=2,
+    )
+
+    # 레이아웃 및 스타일
+    max_sub_val = max(sub_df["건수"].max(), 1)
     fig_category.update_layout(
-
-        height=500,
-
-        xaxis_title="중재 건수",
-
+        height=600,# 하단 범례 공간을 확보하기 위해 높이 살짝 조정
+        paper_bgcolor="rgba(255,255,255,0)",
+        plot_bgcolor="rgba(255,255,255,0)",
+        margin=dict(l=20, r=40, t=100, b=80),  # 상단 여백 최소화, 하단 여백 확보
+        # 하단 범례 설정
+        showlegend=True,
+        legend=dict(
+            orientation="v",  # 세로 배치
+            yanchor="top",
+            y=-0.15,  # 그래프 아래쪽으로 배치
+            xanchor="center",
+            x=0.5,
+            traceorder="normal",
+            font=dict(size=14),
+        ),
         xaxis=dict(
-
-            range=[0,500],
-
+            title="중재 건수",
+            range=[0, max_sub_val * 1.35],
             showline=True,
             linewidth=1,
             linecolor="#9ca3af",
-
             showgrid=True,
             gridcolor="#e5e7eb",
-            gridwidth=1
+            gridwidth=1,
         ),
-
         yaxis=dict(
-
-            automargin=True,
-
+            autorange="reversed",  # 1번부터 위에서 아래로 순서 정렬
             showline=False,
-            
-            zeroline=True,
-            zerolinewidth=1.5,
-            zerolinecolor="#9ca3af",
-
-            showgrid=False
+            showgrid=False,
+            tickfont=dict(
+                size=14,  # 글자 크기 (필요시 조정)
+                color="#111827",  # 또렷하고 진한 검은색 계열 (Slate 900)  # 굵은 폰트 스타일 적용 (또는 'sans-serif')
+            ),
         ),
-        yaxis_title=None,
-
-        paper_bgcolor='rgba(255,255,255,0)',
-        plot_bgcolor='rgba(255,255,255,0)',
-
-        margin=dict(
-            l=40,
-            r=40,
-            t=20,
-            b=20
-        ),
-
-        bargap=0.45,
-
-        legend_title_text="",
-
-        showlegend=False
     )
+
+    fig_category.for_each_annotation(
+        lambda a: a.update(
+            y=a.y + 0.1,
+            font=dict(
+                size=18,
+                color="#595959",
+            ),
+        ),
+    )    
+
 
     # 출력
     st.plotly_chart(
         fig_category,
         use_container_width=True,
         config={"displayModeBar": False},
-        key="asp_category_graph"
+        key="asp_category_graph",
     )
+
+    
+    def get_base64_image(image_path):
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+
+    char_img = get_base64_image("check.png")
+    icon1_img = get_base64_image("중1.png") # 1 | 병합(중복)
+    icon2_img = get_base64_image("중2.png")# 2 | 장기투여
+    icon3_img = get_base64_image("중3.png")    # 3 | 경구전환
+    icon4_img = get_base64_image("중4.png") # 4 | 하강치료
+    icon5_img = get_base64_image("중5.png") # 5 | 미생물검사
+    icon6_img = get_base64_image("중6.png")    # 6 | 가이드라인
+    icon7_img = get_base64_image("중7.png")   # 7 | 모니터링
+
+    st.markdown("""
+    <style>
+        .antibiotic-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 20px;
+            padding: 20px;
+            background-color: #f1f7fe;
+            border-radius: 28px;
+            border: 1px solid #d8e2ee;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+            margin-bottom: 36px;
+        }
+
+        /* 공통 카드 스타일 */
+        .grid-item {
+            background-color: white;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #e1e9f1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;  /* 수평 중앙 정렬 */
+            text-align: center;    /* 텍스트 중앙 정렬 */
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;       /* 마우스 포인터 변경 */
+            height: 100%;          /* 카드 높이 고정 */
+            box-sizing: border-radius;
+        }
+        
+        .grid-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            background-color: #fafafa; /* 호버 시 배경색 소폭 변경 */
+        }
+
+        /* 1. 상단 제목 스타일 */
+        .card-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+
+        /* 2. 가운데 이미지 스타일 */
+        .card-img-container {
+            height: 120px;         /* 이미지 영역 높이 고정 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            width: 100%;
+            transition: margin 0.3s; /* 호버 시 여백 애니메이션 */
+        }
+        
+        .card-img {
+            max-height: 120px;
+            max-width: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        /* 캐릭터 구획 전용 이미지 크기 */
+        .char-img {
+            max-height: 80px;
+        }
+
+        /* 캐릭터 카드는 호버 효과 제외 (선택사항) */
+        .char-card:hover {
+            transform: none;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+            background-color: white;
+        }
+
+        /* 3. 하단 설명 스타일 */
+        .card-content {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #444;
+            font-weight: 400;
+            display: none;       /* 평소에는 숨김 */
+            opacity: 0;           /* 투명도 0 */
+            transition: opacity 0.3s; /* 나타날 때 애니메이션 */
+            width: 100%;
+        }
+        
+        /* 호버 시 설명 스타일 */
+        .grid-item:hover .card-content {
+            display: block;      /* 마우스를 올리면 나타남 */
+            opacity: 1;           /* 투명도 1 (보임) */
+        }
+        
+        /* 호버 시 이미지 여백 조정 (설명이 들어갈 공간 확보) */
+        .grid-item:hover .card-img-container {
+            margin-bottom: 12px;
+        }
+
+        /* 본문 강조 텍스트 */
+        .card-content b {
+            color: #333;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .example-text {
+            font-size: 14px;
+            color: #888;
+            margin-top: 6px;
+        }
+
+        @media (max-width: 1200px) { .antibiotic-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .antibiotic-grid { grid-template-columns: 1fr; } }
+    </style>
+    """, unsafe_allow_html=True)
+
+
+    # 그리드 HTML 구조 작성
+    st.markdown(f"""
+    <div class="antibiotic-grid">
+
+    <!-- 1번 구획: 캐릭터 -->
+    <div class="grid-item char-card">
+        <div class="card-title" style="color:#17406d;">
+            <span class="title-number"> ASP 중재 활동 목록
+        </div>
+        <img src="data:image/png;base64,{char_img}" alt="Robot Character">
+    </div>
+
+    <!-- 2번 구획: 내용 1 -->
+    <div class="grid-item">
+        <div class="card-title" style="color:#3E84F7;">
+            <span class="title-number">1 | 병합 처방 중재
+        </div>
+        <div class="card-img-container">
+            <img class="card-img" src="data:image/png;base64,{icon1_img}">
+        </div>        
+        <div class="card-content">
+            <b>항균 범위가 중복되는<br>항생제들의 병합 사용<br>중단을 권고합니다.</b>
+            <div class="example-text">ex) Pip/tazo + Clindamycin<br>→ Pip/tazo 단독 투여</div>
+        </div>
+    </div>
+
+    <!-- 3번 구획: 내용 2 -->
+    <div class="grid-item">
+        <div class="card-title" style="color:#6875EE;">
+            <span class="title-number">2 | 장기투여 중재
+        </div>
+        <div class="card-img-container">
+            <img class="card-img" src="data:image/png;base64,{icon2_img}">
+        </div>
+        <div class="card-content">
+            <b>최적 투약 기간을 초과한<br>항생제 장기 사용<br>중단을 권고합니다.</b>
+            <div class="example-text">ex) 3세대 Cephalosporin 장기 투여<br>→ 투여 지속 재평가</div>
+        </div>
+    </div>
+
+    <!-- 4번 구획: 내용 3 -->
+    <div class="grid-item">
+        <div class="card-title" style="color:#9D44EC;">
+            <span class="title-number">3 | 경구 전환
+        </div>
+        <div class="card-img-container">
+            <img class="card-img" src="data:image/png;base64,{icon3_img}">
+        </div>
+        <div class="card-content">
+            <b>경구 생체이용률이 높은<br>주사 항생제의<br>경구 전환을 권고합니다.</b>
+            <div class="example-text">ex) Quinolone 일주일 IV 투여<br>→ PO 항생제 전환</div>
+        </div>
+    </div>
+
+    <!-- 5번 구획: 내용 4 -->
+    <div class="grid-item">
+        <div class="card-title" style="color:#6F8FBA;">
+            <span class="title-number">4 | De-escalation
+        </div>
+        <div class="card-img-container">
+            <img class="card-img" src="data:image/png;base64,{icon4_img}">
+        </div>
+        <div class="card-content">
+            <b>광범위 항생제의 지속 사용을 모니터링하여 소범위 항생제 전환을 권고합니다.</b>
+            <div class="example-text">ex) Carbapenem계 4주 이상 사용<br>→ 소범위 항생제로 변경</div>
+        </div>
+    </div>
+
+    <!-- 6번 구획: 내용 5 -->
+    <div class="grid-item">
+        <div class="card-title" style="color:#F1840D;">
+            <span class="title-number">5 | 검사 기반 중재
+        </div>
+        <div class="card-img-container">
+            <img class="card-img" src="data:image/png;base64,{icon5_img}">
+        </div>
+        <div class="card-content">
+            <b>미생물 검사 결과에 따라<br>감수성이 있는 항생제로의<br>전환을 권고합니다.</b>
+            <div class="example-text">ex) 혈액 배양 Candida 검출<br>→ Caspofungin 신속 투여</div>
+        </div>
+    </div>
+
+    <!-- 7번 구획: 내용 6 -->
+    <div class="grid-item">
+        <div class="card-title" style="color:#E94C4C;">
+            <span class="title-number">6 | 지침 기반 중재
+                    </div>
+        <div class="card-img-container">
+            <img class="card-img" src="data:image/png;base64,{icon6_img}">
+        </div>
+        <div class="card-content">
+            <b>항생제 사용 지침에 따라<br>상황에 맞는 적절한 항생제<br>사용을 권고합니다.</b>
+            <div class="example-text">ex) 신기능 저하/투석 환자<br>→ 적절한 용량 변경 권고</div>
+        </div>
+    </div>
+
+    <!-- 8번 구획: 내용 7 -->
+    <div class="grid-item">
+        <div class="card-title" style="color:#5EAF4C;">
+            <span class="title-number">7 | TDM
+        </div>
+        <div class="card-img-container">
+            <img class="card-img" src="data:image/png;base64,{icon7_img}">
+        </div>
+        <div class="card-content">
+            <b>항생제 혈중 농도를 모니터링하여 치료 목표 도달 및 부작용 최소화 용량을 권고합니다.</b>
+            <div class="example-text">ex) IV Vancomycin 투여 환자<br>→ 적정 용량 및 투여 간격 권고</div>
+        </div>
+    </div>
+
+    </div>
+    """, unsafe_allow_html=True)
     # =========================
     # 제한항생제 승인 현황
     # =========================
@@ -4222,7 +4759,7 @@ elif st.session_state.menu == "ASP 중재":
             제한항생제 승인 현황
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)  
 
     # =========================
     # 월별 데이터 정리
@@ -4442,35 +4979,111 @@ elif st.session_state.menu == "ASP 중재":
             f.read()
         ).decode()
 
+    with open("물음표.png", "rb") as f:
+        question_base64 = base64.b64encode(
+            f.read()
+        ).decode()
+
     # 맨 아래 여백
     st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
 
     # 제한.png 표시 박스
     st.markdown(f"""
     <div style="
-        background:#a9d8ff;
+        background:#a9d8ff;        /* 박스 배경색 (하늘색) */
         border:1px solid #dbe7f3;
         border-radius:28px;
-        padding:28px;
-        margin-top:12px;
-        margin-bottom:30px;
+        padding:18px;             /* 내부 여백 (소폭 증가) */
+        margin-top:0px;
+        margin-bottom:15px;
         box-shadow:0 4px 14px rgba(0,0,0,0.05);
+        display:flex;             /* 자식 요소를 수평으로 배치 */
+        align-items:center;       /* 수직 중앙 정렬 */
+        gap: 30px;                /* 두 칼럼 사이의 간격 */
     ">
 
-    <!-- 이미지 -->
+    <!-- 왼쪽 COLUMN: 이미지 -->
     <div style="
-        display:flex;
-        flex-direction:column;
-        align-items:center;
+        flex: 1.3;              /* 왼쪽 칼럼 비율 */
+        display: flex;
+        justify-content: center; /* 이미지 중앙 정렬 */
     ">
         <img src="data:image/png;base64,{restricted_base64}" style="
                 width:100%;
-                max-width:1200px;
-                border-radius:20px;">
+                height:550px;  /* 이미지 최대 크기 조정 (텍스트 공간 확보) */
+                border-radius:20px;
+                object-fit: contain; /* 이미지 비율 유지 */
+        ">
     </div>
 
-    </div>
-    """, unsafe_allow_html=True)
+    <!-- 오른쪽 COLUMN: 흰색 뭉툭한 박스 내부 텍스트 -->
+    <div style="
+        flex: 1;              /* 오른쪽 칼럼 비율 */
+        background: white;     /* 흰색 박스 배경색 */
+        border-radius: 20px;  /* 뭉툭한 라운딩 */
+        padding: 30px;        /* 흰색 박스 내부 여백 */
+        box-shadow: inset 0 8px 20px rgba(0,0,0,0.06); /* 은은한 안쪽 그림자 효과 */
+        border: 1px solid #e1e9f1; /* 은은한 테두리 */
+        color: #17406d;       /* 텍스트 기본 색상 */
+    ">
+        <!-- 제목 -->
+        <div style="
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 15px; /* 제목과 본문 사이 간격 */
+            line-height: 1.3;
+            display: center;
+            color: #0f2b48;
+        ">
+            항생제 처방에 왜 승인이 필요한가요?
+        </div>
+        <!-- 구분선 (선택사항) -->
+        <div style="
+            border-top: 2px dashed #a9d8ff;
+            margin: 15px 0;
+            opacity: 0.7;
+        "></div>
+        <div style="text-align: center;">
+            <img src="data:image/png;base64,{question_base64}" style="
+                width:100%;
+                height:260px;  /* 이미지 최대 크기 조정 (텍스트 공간 확보) */
+                object-fit: contain;
+                margin: 5px 0 15px 0;
+                mix-blend-mode: multiply; /* 흰색 사각 배경을 카드와 자연스럽게 융합 */
+            ">
+        </div>
+         <!-- 3. 핵심 강조 한 줄 (뱃지 + 주황색 포인트) -->
+        <div style="
+            text-align: center;
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 18px;
+            color: #222;
+        ">
+            제한항생제 승인 체계는 
+            <span style="
+                background-color: #f4f8fc;
+                color: #2563eb;
+                padding: 3px 10px;
+                border-radius: 8px;
+                border: 2px solid #2563eb;
+            ">ASP 필수 항목</span>입니다.
+        </div>
+        <!-- 4. 본문 설명 박스 (포인트 바 + 형광펜 효과) -->
+            <div style="
+                font-size: 15px;
+                line-height: 1.7;
+                color: #333;
+                background-color: #c6dbff;
+                padding: 10px 8px;
+                border-radius: 12px;
+            ">
+                질병관리청 권고 상 제한항생제는 광범위하게 사용될 경우 <br>
+                <mark style="background-color: #fff3bf; padding: 2px 4px; border-radius: 4px; font-weight: bold;">항생제 내성을 유발</mark>할 수 있으므로 
+                ASP팀에서 관리해야 하며, <br>제한항생제 사용량은 <mark style="background-color: #fff3bf; padding: 2px 4px; border-radius: 4px; font-weight: bold;">경영진 보고 필수 항목</mark>입니다.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     left_space, button_col = st.columns([9, 1])
 
