@@ -979,7 +979,7 @@ if st.session_state.menu == "안내사항":
         color:#374151;
         margin-bottom:16px;
     ">
-    [공지] 2026년 6월 자료가 업데이트 되었습니다.
+    [공지] 2026년 9월 자료가 업데이트 되었습니다.
     <br><br>
 
     1. 본 홈페이지는 기관 자료를 포함하고 있습니다.
@@ -1430,7 +1430,15 @@ elif st.session_state.menu == "항생제 사용량":
 
             "26/04": "26년도 2분기",
             "26/05": "26년도 2분기",
-            "26/06": "26년도 2분기"
+            "26/06": "26년도 2분기",
+
+            "26/07": "26년도 3분기",
+            "26/08": "26년도 3분기",
+            "26/09": "26년도 3분기",
+
+            "26/10": "26년도 4분기",
+            "26/11": "26년도 4분기",   
+            "26/12": "26년도 4분기"
         }
         return quarter_map.get(month)
 
@@ -2062,7 +2070,8 @@ elif st.session_state.menu == "항생제 사용량":
         "25년도 3분기",
         "25년도 4분기",
         "26년도 1분기",
-        "26년도 2분기"
+        "26년도 2분기",
+        "26년도 3분기"
     ]
 
     # 막대그래프 생성
@@ -2223,7 +2232,8 @@ elif st.session_state.menu == "항생제 사용량":
         "25년도 3분기",
         "25년도 4분기",
         "26년도 1분기",
-        "26년도 2분기"
+        "26년도 2분기",
+        "26년도 3분기"
     ]
 
     # 범례 순서
@@ -2253,7 +2263,7 @@ elif st.session_state.menu == "항생제 사용량":
     )
 
     # 마지막 분기
-    last_quarter = "26년도 2분기"
+    last_quarter = "26년도 3분기"
 
     # 마지막 분기 데이터
     last_points = summary2[
@@ -3427,7 +3437,13 @@ elif st.session_state.menu == "항생제 사용량":
                     "26/03",
                     "26/04",
                     "26/05",
-                    "26/06"
+                    "26/06",
+                    "26/07",
+                    "26/08",
+                    "26/09",
+                    "26/10",
+                    "26/11",
+                    "26/12"
                 ]))
             ].copy()
 
@@ -3444,7 +3460,13 @@ elif st.session_state.menu == "항생제 사용량":
                     "26/03",
                     "26/04",
                     "26/05",
-                    "26/06"
+                    "26/06",
+                    "26/07",
+                    "26/08",
+                    "26/09",
+                    "26/10",
+                    "26/11",
+                    "26/12"
                 ]))
             ].copy()
 
@@ -3461,7 +3483,13 @@ elif st.session_state.menu == "항생제 사용량":
                     "26/03",
                     "26/04",
                     "26/05",
-                    "26/06"
+                    "26/06",
+                    "26/07",
+                    "26/08",
+                    "26/09",
+                    "26/10",
+                    "26/11",
+                    "26/12"
                 ]))
             ].copy()
 
@@ -3485,7 +3513,13 @@ elif st.session_state.menu == "항생제 사용량":
             "26/03",
             "26/04",
             "26/05",
-            "26/06"
+            "26/06",
+            "26/07",
+            "26/08",
+            "26/09",
+            "26/10",
+            "26/11",
+            "26/12"
         ]
 
         class_trend["처방 월"] = pd.Categorical(
@@ -3507,7 +3541,13 @@ elif st.session_state.menu == "항생제 사용량":
                 "26/03": "26년 3월",
                 "26/04": "26년 4월",
                 "26/05": "26년 5월",
-                "26/06": "26년 6월"
+                "26/06": "26년 6월",
+                "26/07": "26년 7월",
+                "26/08": "26년 8월",
+                "26/09": "26년 9월",
+                "26/10": "26년 10월",
+                "26/11": "26년 11월",
+                "26/12": "26년 12월"
             })
         )
 
@@ -3829,158 +3869,6 @@ elif st.session_state.menu == "ASP 중재":
         -----------------------------------------------------------------------------------------------------------<br>
         본원은 2024년 11월부터 항생제 적정사용관리 시범사업에 참여하여<br>
         항생제 적정사용관리 활동 및 항생제 중재를 수행하고 있습니다.
-        <table style="
-            width:100%;
-            border-collapse:collapse;
-            margin-top:8px;
-            font-size:14px;
-        ">
-
-        <tr>
-        <td style="
-            background:rgba(255,255,255,0.12);
-            padding:10px 12px;
-            font-weight:700;
-            border-radius:8px 0 0 8px;
-            width:90px;
-        ">
-            24년 11월
-        </td>
-
-        <td style="
-            padding:10px 12px;
-        ">
-            ASP 시범사업 참여 및 ASP 전담팀 구성
-        </td>
-        </tr>
-
-        <tr>
-        <td style="
-            background:rgba(255,255,255,0.12);
-            padding:10px 12px;
-            font-weight:700;
-            border-radius:8px 0 0 8px;
-            width:90px;
-        ">
-            24년 12월
-        </td>
-
-        <td style="
-            padding:10px 12px;
-        ">
-            항생제 처방 지침 교육 및 항생제 적정사용 전직원 교육
-        </td>
-        </tr>
-        
-        <tr>
-        <td style="
-            background:rgba(255,255,255,0.12);
-            padding:10px 12px;
-            font-weight:700;
-            border-radius:8px 0 0 8px;
-            width:90px;
-        ">
-            25년 2월
-        </td>
-
-        <td style="
-            padding:10px 12px;
-        ">
-            ASP 중재 활동을 위한 전산 구축 완료
-        </td>
-        </tr>
-
-       <tr>
-        <td style="
-            background:rgba(255,255,255,0.12);
-            padding:10px 12px;
-            font-weight:700;
-            border-radius:8px 0 0 8px;
-            width:90px;
-        ">
-            25년 4월
-        </td>
-
-        <td style="
-            padding:10px 12px;
-        ">
-            원내 항생제 사용 지침 제정
-        </td>
-        </tr>
-
-       <tr>
-        <td style="
-            background:rgba(255,255,255,0.12);
-            padding:10px 12px;
-            font-weight:700;
-            border-radius:8px 0 0 8px;
-            width:90px;
-        ">
-            25년 7월
-        </td>
-
-        <td style="
-            padding:10px 12px;
-        ">
-            항생제 처방 지침 교육 및 항생제 적정사용 전직원 교육
-        </td>
-        </tr>
-
-       <tr>
-        <td style="
-            background:rgba(255,255,255,0.12);
-            padding:10px 12px;
-            font-weight:700;
-            border-radius:8px 0 0 8px;
-            width:90px;
-        ">
-            25년 11월
-        </td>
-
-        <td style="
-            padding:10px 12px;
-        ">
-            항생제 처방 지침 전공의 교육 및 항생제 사용 지침 전산화
-        </td>
-        </tr>
-
-       <tr>
-        <td style="
-            background:rgba(255,255,255,0.12);
-            padding:10px 12px;
-            font-weight:700;
-            border-radius:8px 0 0 8px;
-            width:90px;
-        ">
-            26년 1월
-        </td>
-
-        <td style="
-            padding:10px 12px;
-        ">
-            1차년도 시범사업 결과 보고 및 2차년도 시범사업 참여
-        </td>
-        </tr>
-
-        <tr>
-        <td style="
-            background:rgba(255,255,255,0.12);
-            padding:10px 12px;
-            font-weight:700;
-            border-radius:8px 0 0 8px;
-            width:90px;
-        ">
-            26년 5월
-        </td>
-
-        <td style="
-            padding:10px 12px;
-        ">
-            1차년도 시범사업 평가 완료
-        </td>
-        </tr>
-
-        </table>
 
         </div>
 
@@ -4231,7 +4119,7 @@ elif st.session_state.menu == "ASP 중재":
 
             side="right",
 
-            range=[90, 101],
+            range=[50, 105],
 
             tickformat=".0f"
         ),
